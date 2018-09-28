@@ -1,7 +1,7 @@
 image: weltn24/up-docker-node-chrome-headless
 
 before_script:
-  - npm install
+  - yarn install
 
 cache:
   paths:
