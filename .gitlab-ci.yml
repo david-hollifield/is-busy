@@ -1,0 +1,22 @@
+image: weltn24/up-docker-node-chrome-headless
+
+before_script:
+  - npm install
+
+cache:
+  paths:
+  - node_modules/
+
+stages:
+  - test
+
+test_proj:
+  stage: test
+  tags:
+    - linux
+  script:
+    - ./node_modules/.bin/ng test --watch=false --code-coverage=true --single-run=true --browser=ChromeHeadless
+  artifacts:
+    paths:
+      - coverage/*
+  coverage: '/(\d*.?\d+)%/'
