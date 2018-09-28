@@ -16,7 +16,7 @@ test:
     - linux
   before_script:
     - apt-get purge --auto-remove nodejs -y
-    - curl -sL https://deb.nodesource.com/setup_8.x | -E bash -
+    - curl -sL https://deb.nodesource.com/setup_8.x | bash -
     - apt-get install -y nodejs
   script:
     - ./node_modules/.bin/ng test --watch=false --code-coverage=true --single-run=true --browser=ChromeHeadless
