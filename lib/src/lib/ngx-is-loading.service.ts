@@ -56,11 +56,11 @@ export class NgxIsLoadingService {
       ) {}
 
       ngOnInit() {
-        this.loadingService.isLoading().subscribe(value => {
+        this.loadingService.isLoading$().subscribe(value => {
           // ... do stuff
         })
 
-        this.loadingService.isLoading({key: MyCustomComponent}).subscribe(value => {
+        this.loadingService.isLoading$({key: MyCustomComponent}).subscribe(value => {
           // ... do stuff
         })
       }
@@ -69,7 +69,7 @@ export class NgxIsLoadingService {
    * 
    * @param args an optional argument object with a `key` prop
    */
-  isLoading(args: {key?: any} = {}): Observable<boolean> {
+  isLoading$(args: {key?: any} = {}): Observable<boolean> {
     if (!args.key) {
       // small performance optimization for the default key
       return this.loadingObservables.get(this.defaultKey)!
@@ -78,6 +78,23 @@ export class NgxIsLoadingService {
     const key = this.ensureKey(args.key)
 
     return this.loadingObservables.get(key)!
+  }
+
+  /**
+   * Same as `isLoading$()` except a boolean is returned,
+   * rather than an observable.
+   * 
+   * @param args an optional argument object with a `key` prop
+   */
+  isLoading(args: {key?: any} = {}): boolean {
+    if (!args.key) {
+      // small performance optimization for the default key
+      return this.loadingSubjects.get(this.defaultKey)!.value
+    }
+
+    const key = this.ensureKey(args.key)
+
+    return this.loadingSubjects.get(key)!.value
   }
 
   /**
@@ -102,7 +119,7 @@ export class NgxIsLoadingService {
    * the loading of different things seperately. Any truthy
    * value can be used as a key. The key argument for 
    * `addLoading()` is intended to be used in conjunction with
-   * the `key` argument for `isLoading()` and `removeLoading()`.
+   * the `key` argument for `isLoading$()` and `removeLoading()`.
    * 
    * Example:
    ```
@@ -161,7 +178,7 @@ export class NgxIsLoadingService {
    * track the loading of different things seperately. Any
    * truthy value can be used as a key. The key argument for
    * `removeLoading()` is intended to be used in conjunction
-   * with the `key` argument for `isLoading()` and
+   * with the `key` argument for `isLoading$()` and
    * `addLoading()`.
    * 
    * Example:
