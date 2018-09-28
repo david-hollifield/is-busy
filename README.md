@@ -96,3 +96,7 @@ class NgxIsLoadingService {
   removeLoading(args?: {sub?: Subscription, key?: any}): void
 }
 ```
+
+## About
+
+This library has been made by me, John Carroll.
