@@ -19,4 +19,4 @@ test:
   tags:
     - linux
   script:
-    - yarn test --watch=false --code-coverage=true --browser=ChromeHeadless
+    - yarn test --watch=false --code-coverage=true
