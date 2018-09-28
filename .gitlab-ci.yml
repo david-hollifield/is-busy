@@ -1,5 +1,6 @@
 image: weltn24/up-docker-node-chrome-headless:latest
 
+# remove node 10 and install node 8.9 because that's what angular wants
 before_script:
   - apt-get purge --auto-remove nodejs -y
   - curl -sL https://deb.nodesource.com/setup_8.x | bash -
@@ -18,8 +19,4 @@ test:
   tags:
     - linux
   script:
-    - ./node_modules/.bin/ng test --watch=false --code-coverage=true --single-run=true --browser=ChromeHeadless
-  artifacts:
-    paths:
-      - coverage/*
-  coverage: '/(\d*.?\d+)%/'
+    - yarn test --watch=false --code-coverage=true --browser=ChromeHeadless
