@@ -1,5 +1,3 @@
-# Taken from https://tekkie.flashbit.net/devops/angular-e2e-tests-on-gitlab-ci
-
 image: weltn24/up-docker-node-chrome-headless:latest
 
 before_script:
