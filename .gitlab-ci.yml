@@ -1,3 +1,5 @@
+# drawn from https://forum.gitlab.com/t/running-karma-tests-with-chrome-and-gitlab-ci/14476
+
 image: weltn24/up-docker-node-chrome-headless:latest
 
 # remove node 10 and install node 8.9 because that's what angular wants
