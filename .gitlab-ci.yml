@@ -12,6 +12,7 @@ test:
     - wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
     # Update aptitude's package sources
     - apt-get -qq update -y
+    - apt-get update
     # Install yarn
     - apt-get install yarn
     # Install latest Chrome stable, Xvfb packages
