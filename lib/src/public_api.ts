@@ -1,5 +1,5 @@
 /*
- * Public API Surface of ngx-is-loading
+ * Public API Surface of is-loading
  */
 
-export * from './lib/ngx-is-loading.service';
+export * from './lib/is-loading.service';

@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "ngx-is-loading": {
+    "is-loading": {
       "root": "lib",
       "sourceRoot": "lib/src",
       "projectType": "library",
@@ -44,5 +44,5 @@
       }
     }
   },
-  "defaultProject": "ngx-is-loading"
+  "defaultProject": "is-loading"
 }

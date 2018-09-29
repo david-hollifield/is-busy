@@ -1,15 +1,15 @@
-# NgxIsLoading
+# IsLoading
 
-NgxIsLoading is a simple angular service for tracking whether your app, or parts of it, are loading. By using `ngIf` and subscribing to its `isLoading$()` method, you can easily show and hide loading indicators.
+IsLoading is a simple angular service for tracking whether your app, or parts of it, are loading. By using `ngIf` and subscribing to its `isLoading$()` method, you can easily show and hide loading indicators.
 
 You can install it with
 
 ```bash
-yarn add ngx-is-loading
+yarn add @service-work/is-loading
 
 # or
 
-npm install ngx-is-loading
+npm install @service-work/is-loading
 ```
 
 At its most basic, you can import the service into your root component and use `ngIf` + the `AsyncPipe` to show a loading indicator during page navigation.
@@ -33,18 +33,18 @@ Example:
 })
 export class AppComponent implements OnInit {
   constructor(
-    public loadingService: NgxIsLoadingService,
+    public loadingService: IsLoadingService,
   ) {}
 }
 ```
 
-This works because the NgxIsLoadingService automatically subscribes to router events and will emit `true` or `false` from `isLoading$()` as appropriate.
+This works because the IsLoadingService automatically subscribes to router events and will emit `true` or `false` from `isLoading$()` as appropriate.
 
 If you want to manually indicate that something is loading, you can call the `loadingService.addLoading()` method, and then call the `loadingService.removeLoading()` method when loading has stopped.
 
 If you call `loadingService.addLoading()` multiple times (because multiple things are loading), `isLoading$()` will remain true until you call `removeLoading()` an equal number of times.
 
-Internally, the NgxIsLoadingService maintains an array of loading indicators. Whenever you call `addLoading()` it pushes an indicator onto the stack, and `removeLoading()` removes an indicator from the stack. `isLoading$()` is true so long as there are loading indicators on the stack.
+Internally, the IsLoadingService maintains an array of loading indicators. Whenever you call `addLoading()` it pushes an indicator onto the stack, and `removeLoading()` removes an indicator from the stack. `isLoading$()` is true so long as there are loading indicators on the stack.
 
 You can also pass a subscription argument to `loadingService.addLoading({sub: subscription})`. In this case, the loading service will push a loading indicator onto the stack, and then automatically remove it when the subscription resolves (i.e. you don't need to manually call `removeLoading()`.
 
@@ -59,7 +59,7 @@ Example:
 ```typescript
 class MyCustomComponent implements OnInit, AfterViewInit {
   constructor(
-    private loadingService: NgxIsLoading,
+    private loadingService: IsLoadingService,
     private myCustomDataService: MyCustomDataService,
   ) {}
 
@@ -89,7 +89,7 @@ class MyCustomComponent implements OnInit, AfterViewInit {
 ## Interface
 
 ```typescript
-class NgxIsLoadingService {
+class IsLoadingService {
   isLoading$(args?: {key?: any}): Observable<boolean>
   isLoading(args?: {key?: any}): boolean
   addLoading(args?: {sub?: Subscription, key?: any}): void
@@ -99,4 +99,4 @@ class NgxIsLoadingService {
 
 ## About
 
-This library has been made by me, John Carroll.
+This library has been made by John Carroll.

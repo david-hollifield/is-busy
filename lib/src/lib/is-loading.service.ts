@@ -6,7 +6,7 @@ import { Router, NavigationStart, NavigationEnd, NavigationCancel, NavigationErr
 @Injectable({
   providedIn: 'root'
 })
-export class NgxIsLoadingService {
+export class IsLoadingService {
   private defaultKey = Symbol('Default loading key')
   private loadingSubjects = new Map<any, BehaviorSubject<boolean>>()
   private loadingObservables = new Map<any, Observable<boolean>>()
@@ -52,7 +52,7 @@ export class NgxIsLoadingService {
    ```
     class MyCustomComponent implements OnInit {
       constructor(
-        private loadingService: NgxIsLoading,
+        private loadingService: IsLoadingService,
       ) {}
 
       ngOnInit() {
@@ -125,7 +125,7 @@ export class NgxIsLoadingService {
    ```
     class MyCustomComponent implements OnInit, AfterViewInit {
       constructor(
-        private loadingService: NgxIsLoading,
+        private loadingService: IsLoadingService,
         private myCustomDataService: MyCustomDataService,
       ) {}
 
@@ -185,7 +185,7 @@ export class NgxIsLoadingService {
    ```
     class MyCustomComponent implements OnInit, AfterViewInit {
       constructor(
-        private loadingService: NgxIsLoading,
+        private loadingService: IsLoadingService,
       ) {}
 
       ngOnInit() {

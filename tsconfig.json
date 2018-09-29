@@ -18,8 +18,8 @@
       "dom"
     ],
     "paths": {
-      "ngx-is-loading": [
-        "dist/ngx-is-loading"
+      "is-loading": [
+        "dist/is-loading"
       ]
     }
   }

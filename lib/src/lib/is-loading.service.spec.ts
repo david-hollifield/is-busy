@@ -1,31 +1,31 @@
 import { TestBed, inject, async } from '@angular/core/testing';
 
-import { NgxIsLoadingService } from './ngx-is-loading.service';
+import { IsLoadingService } from './is-loading.service';
 import { take } from 'rxjs/operators';
 import { BehaviorSubject, defer } from 'rxjs';
 import { RouterTestingModule } from '@angular/router/testing';
 
-describe('NgxIsLoadingService', () => {
+describe('IsLoadingService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [RouterTestingModule],
-      providers: [NgxIsLoadingService]
+      providers: [IsLoadingService]
     });
   });
 
-  it('should be created', inject([NgxIsLoadingService], (service: NgxIsLoadingService) => {
+  it('should be created', inject([IsLoadingService], (service: IsLoadingService) => {
     expect(service).toBeTruthy();
   }));
 
   describe("with isLoading$", () => {
     describe("default key", () => {
-      it('#isLoading$ simple', async(inject([NgxIsLoadingService], async (service: NgxIsLoadingService) => {
+      it('#isLoading$ simple', async(inject([IsLoadingService], async (service: IsLoadingService) => {
         let value = await service.isLoading$().pipe(take(1)).toPromise()
         
         expect(value).toBeFalsy();
       })));
   
-      it('#addLoading & #removeLoading', async(inject([NgxIsLoadingService], async (service: NgxIsLoadingService) => {
+      it('#addLoading & #removeLoading', async(inject([IsLoadingService], async (service: IsLoadingService) => {
         service.addLoading()
         
         let value = await service.isLoading$().pipe(take(1)).toPromise()
@@ -48,7 +48,7 @@ describe('NgxIsLoadingService', () => {
         expect(value).toBeFalsy();
       })));
   
-      it('#addLoading w/ subscription', async(inject([NgxIsLoadingService], async (service: NgxIsLoadingService) => {
+      it('#addLoading w/ subscription', async(inject([IsLoadingService], async (service: IsLoadingService) => {
         let subject = new BehaviorSubject(true)
   
         let subscription = subject.subscribe()
@@ -69,7 +69,7 @@ describe('NgxIsLoadingService', () => {
         expect(value).toBeFalsy();
       })));
   
-      // it('#isLoading$ observable', async(inject([NgxIsLoadingService], async (service: NgxIsLoadingService) => {
+      // it('#isLoading$ observable', async(inject([IsLoadingService], async (service: IsLoadingService) => {
       //   let count=0
   
       //   service.isLoading$().subscribe(value => {
@@ -95,71 +95,71 @@ describe('NgxIsLoadingService', () => {
     })
   
     describe("class key", () => {
-      it('#isLoading$ simple', async(inject([NgxIsLoadingService], async (service: NgxIsLoadingService) => {
+      it('#isLoading$ simple', async(inject([IsLoadingService], async (service: IsLoadingService) => {
         let value = true
         
-        value = await service.isLoading$({key: NgxIsLoadingService}).pipe(take(1)).toPromise()
+        value = await service.isLoading$({key: IsLoadingService}).pipe(take(1)).toPromise()
   
         expect(value).toBeFalsy();
       })));
   
-      it('#addLoading & #removeLoading', async(inject([NgxIsLoadingService], async (service: NgxIsLoadingService) => {
+      it('#addLoading & #removeLoading', async(inject([IsLoadingService], async (service: IsLoadingService) => {
         let value = false
         
-        service.addLoading({key: NgxIsLoadingService})
+        service.addLoading({key: IsLoadingService})
         
-        value = await service.isLoading$({key: NgxIsLoadingService}).pipe(take(1)).toPromise()
+        value = await service.isLoading$({key: IsLoadingService}).pipe(take(1)).toPromise()
         expect(value!).toBeTruthy();
   
         value = await service.isLoading$().pipe(take(1)).toPromise()
         expect(value!).toBeFalsy();
   
   
-        service.addLoading({key: NgxIsLoadingService})
+        service.addLoading({key: IsLoadingService})
         
-        value = await service.isLoading$({key: NgxIsLoadingService}).pipe(take(1)).toPromise()
+        value = await service.isLoading$({key: IsLoadingService}).pipe(take(1)).toPromise()
         expect(value!).toBeTruthy();
   
         value = await service.isLoading$().pipe(take(1)).toPromise()
         expect(value!).toBeFalsy();
   
   
-        service.removeLoading({key: NgxIsLoadingService})
+        service.removeLoading({key: IsLoadingService})
         
-        value = await service.isLoading$({key: NgxIsLoadingService}).pipe(take(1)).toPromise()
+        value = await service.isLoading$({key: IsLoadingService}).pipe(take(1)).toPromise()
         expect(value!).toBeTruthy();
   
         value = await service.isLoading$().pipe(take(1)).toPromise()
         expect(value!).toBeFalsy();
   
   
-        service.removeLoading({key: NgxIsLoadingService})
+        service.removeLoading({key: IsLoadingService})
         
-        value = await service.isLoading$({key: NgxIsLoadingService}).pipe(take(1)).toPromise()
+        value = await service.isLoading$({key: IsLoadingService}).pipe(take(1)).toPromise()
         expect(value!).toBeFalsy();
   
         value = await service.isLoading$().pipe(take(1)).toPromise()
         expect(value!).toBeFalsy();
       })));
   
-      it('#addLoading w/ subscription', async(inject([NgxIsLoadingService], async (service: NgxIsLoadingService) => {
+      it('#addLoading w/ subscription', async(inject([IsLoadingService], async (service: IsLoadingService) => {
         let value = false
   
         let subject = new BehaviorSubject(true)
   
         let subscription = subject.subscribe()
         
-        service.addLoading({sub: subscription, key: NgxIsLoadingService})
+        service.addLoading({sub: subscription, key: IsLoadingService})
         
-        value = await service.isLoading$({key: NgxIsLoadingService}).pipe(take(1)).toPromise()
+        value = await service.isLoading$({key: IsLoadingService}).pipe(take(1)).toPromise()
         expect(value).toBeTruthy();
   
         value = await service.isLoading$().pipe(take(1)).toPromise()
         expect(value).toBeFalsy();
   
-        service.addLoading({sub: subscription, key: NgxIsLoadingService})
+        service.addLoading({sub: subscription, key: IsLoadingService})
         
-        value = await service.isLoading$({key: NgxIsLoadingService}).pipe(take(1)).toPromise()
+        value = await service.isLoading$({key: IsLoadingService}).pipe(take(1)).toPromise()
         expect(value).toBeTruthy();
   
         value = await service.isLoading$().pipe(take(1)).toPromise()
@@ -169,19 +169,19 @@ describe('NgxIsLoadingService', () => {
   
         expect(subscription.closed).toBeTruthy()
   
-        value = await service.isLoading$({key: NgxIsLoadingService}).pipe(take(1)).toPromise()
+        value = await service.isLoading$({key: IsLoadingService}).pipe(take(1)).toPromise()
         expect(value).toBeFalsy();
   
         value = await service.isLoading$().pipe(take(1)).toPromise()
         expect(value).toBeFalsy();
       })));
   
-      // it('#isLoading$ observable', async(inject([NgxIsLoadingService], (service: NgxIsLoadingService) => {
+      // it('#isLoading$ observable', async(inject([IsLoadingService], (service: IsLoadingService) => {
       //   new Promise((resolve, reject) => {
       //     let countKey=0
       //     let countDefault=0
     
-      //     service.isLoading$({key: NgxIsLoadingService}).subscribe(value => {
+      //     service.isLoading$({key: IsLoadingService}).subscribe(value => {
       //       countKey++
     
       //       if (countKey % 2 === 0) {
@@ -196,12 +196,12 @@ describe('NgxIsLoadingService', () => {
       //       countDefault++
       //     })
           
-      //     service.addLoading({key: NgxIsLoadingService})
-      //     service.addLoading({key: NgxIsLoadingService})
-      //     service.addLoading({key: NgxIsLoadingService})
-      //     service.removeLoading({key: NgxIsLoadingService})
-      //     service.removeLoading({key: NgxIsLoadingService})
-      //     service.removeLoading({key: NgxIsLoadingService})
+      //     service.addLoading({key: IsLoadingService})
+      //     service.addLoading({key: IsLoadingService})
+      //     service.addLoading({key: IsLoadingService})
+      //     service.removeLoading({key: IsLoadingService})
+      //     service.removeLoading({key: IsLoadingService})
+      //     service.removeLoading({key: IsLoadingService})
     
       //     expect(countKey).toBe(2)
       //     expect(countDefault).toBe(0)
@@ -213,11 +213,11 @@ describe('NgxIsLoadingService', () => {
 
   describe("with isLoading", () => {
     describe("default key", () => {
-      it('#isLoading$ simple', (inject([NgxIsLoadingService],  (service: NgxIsLoadingService) => {        
+      it('#isLoading$ simple', (inject([IsLoadingService],  (service: IsLoadingService) => {        
         expect(service.isLoading()).toBeFalsy();
       })));
   
-      it('#addLoading & #removeLoading', (inject([NgxIsLoadingService],  (service: NgxIsLoadingService) => {
+      it('#addLoading & #removeLoading', (inject([IsLoadingService],  (service: IsLoadingService) => {
         service.addLoading()
           
         expect(service.isLoading()).toBeTruthy();
@@ -235,7 +235,7 @@ describe('NgxIsLoadingService', () => {
         expect(service.isLoading()).toBeFalsy();
       })));
   
-      it('#addLoading w/ subscription', (inject([NgxIsLoadingService],  (service: NgxIsLoadingService) => {
+      it('#addLoading w/ subscription', (inject([IsLoadingService],  (service: IsLoadingService) => {
         let subject = new BehaviorSubject(true)
   
         let subscription = subject.subscribe()
@@ -254,52 +254,52 @@ describe('NgxIsLoadingService', () => {
     })
   
     describe("class key", () => {
-      it('#isLoading$ simple', (inject([NgxIsLoadingService],  (service: NgxIsLoadingService) => {  
-        expect(service.isLoading({key: NgxIsLoadingService})).toBeFalsy();
+      it('#isLoading$ simple', (inject([IsLoadingService],  (service: IsLoadingService) => {  
+        expect(service.isLoading({key: IsLoadingService})).toBeFalsy();
       })));
   
-      it('#addLoading & #removeLoading', (inject([NgxIsLoadingService],  (service: NgxIsLoadingService) => {        
-        service.addLoading({key: NgxIsLoadingService})
+      it('#addLoading & #removeLoading', (inject([IsLoadingService],  (service: IsLoadingService) => {        
+        service.addLoading({key: IsLoadingService})
         
-        expect(service.isLoading({key: NgxIsLoadingService})).toBeTruthy();
+        expect(service.isLoading({key: IsLoadingService})).toBeTruthy();
         expect(service.isLoading()).toBeFalsy();
   
-        service.addLoading({key: NgxIsLoadingService})
+        service.addLoading({key: IsLoadingService})
         
-        expect(service.isLoading({key: NgxIsLoadingService})).toBeTruthy();
+        expect(service.isLoading({key: IsLoadingService})).toBeTruthy();
         expect(service.isLoading()).toBeFalsy();
   
-        service.removeLoading({key: NgxIsLoadingService})
+        service.removeLoading({key: IsLoadingService})
         
-        expect(service.isLoading({key: NgxIsLoadingService})).toBeTruthy();  
+        expect(service.isLoading({key: IsLoadingService})).toBeTruthy();  
         expect(service.isLoading()).toBeFalsy();
   
-        service.removeLoading({key: NgxIsLoadingService})
+        service.removeLoading({key: IsLoadingService})
         
-        expect(service.isLoading({key: NgxIsLoadingService})).toBeFalsy();
+        expect(service.isLoading({key: IsLoadingService})).toBeFalsy();
         expect(service.isLoading()).toBeFalsy();
       })));
   
-      it('#addLoading w/ subscription', (inject([NgxIsLoadingService],  (service: NgxIsLoadingService) => {
+      it('#addLoading w/ subscription', (inject([IsLoadingService],  (service: IsLoadingService) => {
         let subject = new BehaviorSubject(true)
   
         let subscription = subject.subscribe()
         
-        service.addLoading({sub: subscription, key: NgxIsLoadingService})
+        service.addLoading({sub: subscription, key: IsLoadingService})
         
-        expect(service.isLoading({key: NgxIsLoadingService})).toBeTruthy();
+        expect(service.isLoading({key: IsLoadingService})).toBeTruthy();
         expect(service.isLoading()).toBeFalsy();
   
-        service.addLoading({sub: subscription, key: NgxIsLoadingService})
+        service.addLoading({sub: subscription, key: IsLoadingService})
         
-        expect(service.isLoading({key: NgxIsLoadingService})).toBeTruthy();
+        expect(service.isLoading({key: IsLoadingService})).toBeTruthy();
         expect(service.isLoading()).toBeFalsy();
   
         subject.complete()
   
         expect(subscription.closed).toBeTruthy()
   
-        expect(service.isLoading({key: NgxIsLoadingService})).toBeFalsy();
+        expect(service.isLoading({key: IsLoadingService})).toBeFalsy();
         expect(service.isLoading()).toBeFalsy();
       })));
     })

@@ -1,13 +1,13 @@
 {
-  "name": "ngx-is-loading",
+  "name": "@service-work/is-loading",
   "version": "0.0.1",
   "description": "A simple loading indicator service for Angular apps.",
   "author": "John Carroll <john.carroll.p@gmail.com>",
-  "homepage": "https://gitlab.com/john.carroll.p/ngx-is-loading",
-  "bugs": "https://gitlab.com/john.carroll.p/ngx-is-loading/issues",
+  "homepage": "https://gitlab.com/john.carroll.p/is-loading",
+  "bugs": "https://gitlab.com/john.carroll.p/is-loading/issues",
   "repository": {
     "type": "git",
-    "url": "https://gitlab.com/john.carroll.p/ngx-is-loading.git"
+    "url": "https://gitlab.com/john.carroll.p/is-loading.git"
   },
   "license": "Unlicense",
   "keywords": [
