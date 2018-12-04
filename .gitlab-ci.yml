@@ -21,4 +21,4 @@ test:
   tags:
     - linux
   script:
-    - yarn test --watch=false
+    - yarn test --watch=false --code-coverage=false
