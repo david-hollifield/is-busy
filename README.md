@@ -32,27 +32,25 @@ Example:
   `,
 })
 export class AppComponent implements OnInit {
-  constructor(
-    public loadingService: IsLoadingService,
-  ) {}
+  constructor(public loadingService: IsLoadingService) {}
 }
 ```
 
 This works because the IsLoadingService automatically subscribes to router events and will emit `true` or `false` from `isLoading$()` as appropriate.
 
-If you want to manually indicate that something is loading, you can call the `loadingService.addLoading()` method, and then call the `loadingService.removeLoading()` method when loading has stopped.
+If you want to manually indicate that something is loading, you can call the `loadingService.add()` method, and then call the `loadingService.remove()` method when loading has stopped.
 
-If you call `loadingService.addLoading()` multiple times (because multiple things are loading), `isLoading$()` will remain true until you call `removeLoading()` an equal number of times.
+If you call `loadingService.add()` multiple times (because multiple things are loading), `isLoading$()` will remain true until you call `remove()` an equal number of times.
 
-Internally, the IsLoadingService maintains an array of loading indicators. Whenever you call `addLoading()` it pushes an indicator onto the stack, and `removeLoading()` removes an indicator from the stack. `isLoading$()` is true so long as there are loading indicators on the stack.
+Internally, the IsLoadingService maintains an array of loading indicators. Whenever you call `add()` it pushes an indicator onto the stack, and `remove()` removes an indicator from the stack. `isLoading$()` is true so long as there are loading indicators on the stack.
 
-You can also pass a subscription argument to `loadingService.addLoading({sub: subscription})`. In this case, the loading service will push a loading indicator onto the stack, and then automatically remove it when the subscription resolves (i.e. you don't need to manually call `removeLoading()`.
+You can also pass a subscription (or promise) argument to `loadingService.add(subscription)`. In this case, the loading service will push a loading indicator onto the stack, and then automatically remove it when the subscription or promise resolves (i.e. you don't need to manually call `remove()`.
 
 If you just want to check the current value of `isLoading$()`, you can call `isLoading()` (without the `$`) to simply get a boolean value.
 
 ## Advanced Usage
 
-For more advanced scenarios, you can call `addLoading()` with an optional `key` argument. The key allows you to track the loading of different things seperately. Any truthy value can be used as a key. The key argument for `addLoading()` is intended to be used in conjunction with `key` arguments for `isLoading$()` and `removeLoading()`.
+For more advanced scenarios, you can call `add()` with an options object containing a single `key` property. The key allows you to track the loading of different things seperately. Any truthy value can be used as a key. The key option for `add()` is intended to be used in conjunction with `key` options for `isLoading$()` and `remove()`.
 
 Example:
 
@@ -64,20 +62,19 @@ class MyCustomComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit() {
-    this.loadingService.addLoading({key: MyCustomComponent})
+    this.loadingService.add({key: MyCustomComponent})
 
     const subscription = this.myCustomDataService.getData().subscribe()
 
-    // Note, we don't need to call removeLoading() when calling
-    // addLoading() with a subscription
-    this.loadingService.addLoading({
-      sub: subscription,
+    // Note, we don't need to call remove() when calling
+    // add() with a subscription
+    this.loadingService.add(subscription, {
       key: 'getting-data'
     })
   }
 
   ngAfterViewInit() {
-    this.loadingService.removeLoading({key: MyCustomComponent})
+    this.loadingService.remove({key: MyCustomComponent})
   }
 
   isDataLoading(): boolean {
@@ -90,10 +87,21 @@ class MyCustomComponent implements OnInit, AfterViewInit {
 
 ```typescript
 class IsLoadingService {
-  isLoading$(args?: {key?: any}): Observable<boolean>
-  isLoading(args?: {key?: any}): boolean
-  addLoading(args?: {sub?: Subscription, key?: any}): void
-  removeLoading(args?: {sub?: Subscription, key?: any}): void
+  isLoading$(options?: LoadingOptions): Observable<boolean>
+  
+  isLoading(options?: LoadingOptions): boolean
+
+  add(): void
+  add(options: LoadingOptions): void
+  add(sub: Subscription | Promise<unknown>, options?: LoadingOptions): void
+  
+  remove(): void
+  remove(options: LoadingOptions): void
+  remove(sub: Subscription | Promise<unknown>, options?: LoadingOptions): void
+}
+
+interface LoadingOptions {
+  key?: unknown;
 }
 ```
 
