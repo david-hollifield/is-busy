@@ -93,7 +93,10 @@ class IsLoadingService {
 
   add(): void
   add(options: LoadingOptions): void
-  add(sub: Subscription | Promise<unknown>, options?: LoadingOptions): void
+  add<T extends Subscription | Promise<unknown>>(
+    sub: T,
+    options?: LoadingOptions
+  ): T
   
   remove(): void
   remove(options: LoadingOptions): void
