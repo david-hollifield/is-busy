@@ -1,5 +1,9 @@
 # Changelog
 
+### 1.1.0 / 2019-1-17
+
+- [FEATURE] If called with a Subscription/Promise, `add()` now returns the Subscription/Promise.
+
 ### 1.0.0 / 2018-12-4
 
 - [BREAKING] Now requires typescript 3.1 and Angular 7.x
