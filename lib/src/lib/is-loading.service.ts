@@ -1,6 +1,11 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Subscription, Observable } from 'rxjs';
-import { distinctUntilChanged, debounceTime, filter } from 'rxjs/operators';
+import {
+  distinctUntilChanged,
+  debounceTime,
+  filter,
+  take
+} from 'rxjs/operators';
 import {
   Router,
   NavigationStart,
@@ -111,29 +116,44 @@ export class IsLoadingService {
   }
 
   /**
-   * Used to indicate that something has started loading.
+   * Used to indicate that *something* has started loading.
    *
-   * When called without arguments, pushes a loading indicator
-   * onto the default *isLoading* observable's stack. So long
-   * as any items are in an *isLoading* observable's stack,
-   * that observable will be marked as loading. You will need
-   * to manually call `remove()` when loading has
-   * stopped.
+   * Optionally, a key can be passed to track the loading
+   * of different things.
    *
-   * When called and passed a `Subscription` or `Promise`
-   * argument, it pushes a loading indicator onto the
-   * default *isLoading* observable's stack. This loading
-   * indicator is automatically removed when the subscription
-   * or promise closes, so you will not need to manually call
-   * `remove()`.
+   * You can pass a `Subscription`, `Promise`, or `Observable`
+   * argument, or you can call `add()` without arguments.
    *
-   * In more advanced usage, you can call `add()` with
-   * an options object which accepts a single `key` property.
-   * The key allows you to track the loading of different
-   * things seperately. Any truthy value can be used as a
-   * key. The key option for `add()` is intended to be used
-   * in conjunction with the `key` option for `isLoading$()`
-   * and `remove()`.
+   * - If called without arguments, the "keyless" key is
+   *   marked as loading. It will remain loading until you
+   *   manually call `remove()` once. If you call `add()`
+   *   twice without arguments, you will need to call
+   *   `remove()` twice without arguments for loading to
+   *   stop. Etc.
+   * - If called with a `Subscription` or `Promise`
+   *   argument, the appropriate key is marked as loading
+   *   until the `Subscription` or `Promise` resolves, at
+   *   which point it is automatically marked as no longer
+   *   loading. There is no need to call `remove()` in this
+   *   scenerio.
+   * - If called with an `Observable` argument, the
+   *   appropriate key is marked as loading until the
+   *   next emission of the `Observable`, at which point
+   *   IsLoadingService will unsubscribe from the
+   *   observable and mark the key as no longer loading.
+   *
+   * If you pass a `Subscription`, `Promise`, or
+   * `Observable` argument to `add()`, then `add()` will
+   * return that argument. This is to make it easier for
+   * you to chain off of `add()`.
+   *
+   * Example: `await isLoadingService.add(promise);`
+   *
+   * Finally, as previously noted the key option allows you
+   * to track the loading of different things seperately.
+   * Any truthy value can be used as a key. The key option
+   * for `add()` is intended to be used in conjunction with
+   * the `key` option for `isLoading$()` and `remove()`.
    *
    * Example:
    ```
@@ -161,13 +181,13 @@ export class IsLoadingService {
     }
    ```
    *
-   * @return If called with a `Subscription` or `Promise`,
-   *         the Subscription/Promise is returned.
+   * @return If called with a `Subscription`, `Promise` or `Observable`,
+   *         the Subscription/Promise/Observable is returned.
    *         This allows code like `await this.isLoadingService.add(promise)`.
    */
   add(): void;
   add(options: LoadingOptions): void;
-  add<T extends Subscription | Promise<unknown>>(
+  add<T extends Subscription | Promise<unknown> | Observable<unknown>>(
     sub: T,
     options?: LoadingOptions
   ): T;
@@ -179,7 +199,9 @@ export class IsLoadingService {
     let sub: Subscription | Promise<unknown> | undefined;
 
     if (first instanceof Subscription) {
-      if (first.closed) { return; }
+      if (first.closed) {
+        return;
+      }
       sub = first;
 
       first.add(() => this.remove(first, second));
@@ -191,6 +213,10 @@ export class IsLoadingService {
         () => this.remove(first, second),
         () => this.remove(first, second)
       );
+    } else if (first instanceof Observable) {
+      sub = first.pipe(take(1)).subscribe();
+
+      sub.add(() => this.remove(sub as Subscription, second));
     } else if (first) {
       key = this.ensureKey(first.key);
     }
@@ -203,7 +229,7 @@ export class IsLoadingService {
 
     this.updateLoadingStatus(key);
 
-    return sub;
+    return first instanceof Observable ? first : sub;
   }
 
   /**

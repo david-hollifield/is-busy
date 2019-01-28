@@ -21,11 +21,11 @@ Example:
   selector: 'app-root',
   template: `
     <mat-progress-bar
-        *ngIf='loadingService.isLoading$() | async'
-        mode='indeterminate'
-        color='warn'
-        style='position: absolute; top: 0; z-index: 100;'
-        >
+      *ngIf="(loadingService.isLoading$() | async)"
+      mode="indeterminate"
+      color="warn"
+      style="position: absolute; top: 0; z-index: 100;"
+    >
     </mat-progress-bar>
 
     <router-outlet></router-outlet>
@@ -44,7 +44,7 @@ If you call `loadingService.add()` multiple times (because multiple things are l
 
 Internally, the IsLoadingService maintains an array of loading indicators. Whenever you call `add()` it pushes an indicator onto the stack, and `remove()` removes an indicator from the stack. `isLoading$()` is true so long as there are loading indicators on the stack.
 
-You can also pass a subscription (or promise) argument to `loadingService.add(subscription)`. In this case, the loading service will push a loading indicator onto the stack, and then automatically remove it when the subscription or promise resolves (i.e. you don't need to manually call `remove()`.
+You can also pass a subscription (or promise or observable) argument to `loadingService.add(subscription)`. In this case, the loading service will push a loading indicator onto the stack, and then automatically remove it when the subscription or promise resolves (i.e. you don't need to manually call `remove()`). In the case of an observable, the loading service will `take(1)` and subscribe to the next emission only.
 
 If you just want to check the current value of `isLoading$()`, you can call `isLoading()` (without the `$`) to simply get a boolean value.
 
@@ -62,23 +62,23 @@ class MyCustomComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit() {
-    this.loadingService.add({key: MyCustomComponent})
+    this.loadingService.add({ key: MyCustomComponent });
 
-    const subscription = this.myCustomDataService.getData().subscribe()
+    const subscription = this.myCustomDataService.getData().subscribe();
 
     // Note, we don't need to call remove() when calling
     // add() with a subscription
     this.loadingService.add(subscription, {
-      key: 'getting-data'
-    })
+      key: 'getting-data',
+    });
   }
 
   ngAfterViewInit() {
-    this.loadingService.remove({key: MyCustomComponent})
+    this.loadingService.remove({ key: MyCustomComponent });
   }
 
   isDataLoading(): boolean {
-    return this.loadingService.isLoading({key: 'getting-data'})
+    return this.loadingService.isLoading({ key: 'getting-data' });
   }
 }
 ```
@@ -87,20 +87,20 @@ class MyCustomComponent implements OnInit, AfterViewInit {
 
 ```typescript
 class IsLoadingService {
-  isLoading$(options?: LoadingOptions): Observable<boolean>
-  
-  isLoading(options?: LoadingOptions): boolean
+  isLoading$(options?: LoadingOptions): Observable<boolean>;
 
-  add(): void
-  add(options: LoadingOptions): void
-  add<T extends Subscription | Promise<unknown>>(
+  isLoading(options?: LoadingOptions): boolean;
+
+  add(): void;
+  add(options: LoadingOptions): void;
+  add<T extends Subscription | Promise<unknown> | Observable<unknown>>(
     sub: T,
-    options?: LoadingOptions
-  ): T
-  
-  remove(): void
-  remove(options: LoadingOptions): void
-  remove(sub: Subscription | Promise<unknown>, options?: LoadingOptions): void
+    options?: LoadingOptions,
+  ): T;
+
+  remove(): void;
+  remove(options: LoadingOptions): void;
+  remove(sub: Subscription | Promise<unknown>, options?: LoadingOptions): void;
 }
 
 interface LoadingOptions {

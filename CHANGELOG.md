@@ -1,5 +1,11 @@
 # Changelog
 
+### 1.2.0 / 2019-1-27
+
+- [FEATURE] `add` now accepts an `Observable` argument. If passed an observable, `add()` will
+  subscribe to the next emission and then unsubscribe. Like Subscription/Promise arguments,
+  Observablees are returned.
+
 ### 1.1.0 / 2019-1-17
 
 - [FEATURE] If called with a Subscription/Promise, `add()` now returns the Subscription/Promise.
