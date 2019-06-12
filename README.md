@@ -21,7 +21,7 @@ Example:
   selector: 'app-root',
   template: `
     <mat-progress-bar
-      *ngIf="(loadingService.isLoading$() | async)"
+      *ngIf="loadingService.isLoading$() | async"
       mode="indeterminate"
       color="warn"
       style="position: absolute; top: 0; z-index: 100;"
@@ -82,6 +82,10 @@ class MyCustomComponent implements OnInit, AfterViewInit {
   }
 }
 ```
+
+### A note about _dynamic_ keys
+
+Using dynamic values for `IsLoadingService` keys is not supported at the moment. This is because `IsLoadingService` keys (and their values) are cached for the lifetime of an application. In general, this shouldn't be a problem as I can't imagine a typical application using more than a few hundred unique keys--that is, unless you try using dynamic keys. In the dynamic key scenerio, your application could quickly acrue a memory leak.
 
 ## Interface
 
