@@ -1,6 +1,6 @@
 # Angular IsLoading
 
-[IsLoadingService](#isloadingservice) is a simple angular service for tracking whether your app, or parts of it, are loading. By using `ngIf` and subscribing to its `isLoading$()` method, you can easily show and hide loading indicators. There is also an optional companion directive [`IsLoadingDirective`](#isloadingdirective) which can help you automatically mark or disable a button (or other HTML element) when loading.
+[IsLoadingService](#isloadingservice) is a simple angular service for tracking whether your app, or parts of it, are loading. By using `ngIf` and subscribing to its `isLoading$()` method, you can easily show and hide loading indicators. There is also an optional companion directive [IsLoadingDirective](#isloadingdirective) which can help you automatically mark or disable a button (or other HTML element) when loading.
 
 You can install it with
 
