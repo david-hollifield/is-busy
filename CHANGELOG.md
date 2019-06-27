@@ -1,5 +1,9 @@
 # Changelog
 
+### 1.3.0 / 2019-6-27
+
+- [FEATURE] `IsLoadingDirectiveModule` added
+
 ### 1.2.0 / 2019-1-27
 
 - [FEATURE] `add` now accepts an `Observable` argument. If passed an observable, `add()` will
