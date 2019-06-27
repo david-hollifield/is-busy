@@ -1,6 +1,6 @@
-# IsLoadingService
+# IsLoading
 
-IsLoadingService is a simple angular service for tracking whether your app, or parts of it, are loading. By using `ngIf` and subscribing to its `isLoading$()` method, you can easily show and hide loading indicators.
+IsLoadingService is a simple angular service for tracking whether your app, or parts of it, are loading. By using `ngIf` and subscribing to its `isLoading$()` method, you can easily show and hide loading indicators. There is also an optional companion directive `IsLoadingDirective` which can help you automatically mark or disable a button (or other HTML element) as loading.
 
 You can install it with
 
@@ -11,6 +11,8 @@ yarn add @service-work/is-loading
 
 npm install @service-work/is-loading
 ```
+
+## IsLoadingService
 
 At its most basic, you can import the service into your root component and use `ngIf` + the `AsyncPipe` to show a loading indicator during page navigation.
 
@@ -48,7 +50,7 @@ You can also pass a subscription (or promise or observable) argument to `loading
 
 If you just want to check the current value of `isLoading$()`, you can call `isLoading()` (without the `$`) to simply get a boolean value.
 
-## Advanced Usage
+### Advanced Usage
 
 For more advanced scenarios, you can call `add()` with an options object containing a single `key` property. The key allows you to track the loading of different things seperately. Any truthy value can be used as a key. The key option for `add()` is intended to be used in conjunction with `key` options for `isLoading$()` and `remove()`.
 
@@ -83,11 +85,11 @@ class MyCustomComponent implements OnInit, AfterViewInit {
 }
 ```
 
-### A note about _dynamic_ keys
+#### A note about _dynamic_ keys
 
 Using dynamic values for `IsLoadingService` keys is not supported at the moment. This is because `IsLoadingService` keys (and their values) are cached for the lifetime of an application. In general, this shouldn't be a problem as I can't imagine a typical application using more than a few hundred unique keys--that is, unless you try using dynamic keys. In the dynamic key scenerio, your application could quickly acrue a memory leak.
 
-## Interface
+### Interface
 
 ```typescript
 class IsLoadingService {
@@ -111,6 +113,10 @@ interface LoadingOptions {
   key?: unknown;
 }
 ```
+
+## IsLoadingDirective
+
+description coming soon...
 
 ## About
 
