@@ -11,6 +11,7 @@ import {
   ComponentRef,
   Injector,
   Inject,
+  Optional,
 } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 import { IsLoadingService } from '../is-loading.service';
@@ -68,9 +69,6 @@ export class IsLoadingDirective implements OnChanges, AfterViewInit, OnDestroy {
     return this._swIsLoadingDisableEl;
   }
 
-  private _swIsLoadingDisableEl =
-    this.config.disableEl === undefined ? true : this.config.disableEl;
-
   // By default, if this directive is attached to an anchor or a button
   // element, add a `sw-is-loading-spinner` element to the dom (for styling)
   @Input() set swIsLoadingSpinner(value: boolean) {
@@ -80,12 +78,6 @@ export class IsLoadingDirective implements OnChanges, AfterViewInit, OnDestroy {
     return this._swIsLoadingSpinner;
   }
 
-  private _swIsLoadingSpinner =
-    this.config.addSpinnerEl !== undefined
-      ? this.config.addSpinnerEl
-      : this.el.nativeElement instanceof HTMLButtonElement ||
-        this.el.nativeElement instanceof HTMLAnchorElement;
-
   get isLoading() {
     return this._isLoading;
   }
@@ -93,6 +85,17 @@ export class IsLoadingDirective implements OnChanges, AfterViewInit, OnDestroy {
   private _isLoading = false;
 
   private spinnerEl?: ComponentRef<IsLoadingSpinnerComponent>;
+
+  private config: ISWIsLoadingDirectiveConfig = {};
+
+  private _swIsLoadingDisableEl =
+    this.config.disableEl === undefined ? true : this.config.disableEl;
+
+  private _swIsLoadingSpinner =
+    this.config.addSpinnerEl !== undefined
+      ? this.config.addSpinnerEl
+      : this.el.nativeElement instanceof HTMLButtonElement ||
+        this.el.nativeElement instanceof HTMLAnchorElement;
 
   private loadingClass = this.config.loadingClass
     ? this.config.loadingClass
@@ -107,14 +110,17 @@ export class IsLoadingDirective implements OnChanges, AfterViewInit, OnDestroy {
   private booleanValueResolveFn?: () => void;
 
   constructor(
+    @Optional()
     @Inject(SW_IS_LOADING_DIRECTIVE_CONFIG)
-    private config: ISWIsLoadingDirectiveConfig,
+    config: ISWIsLoadingDirectiveConfig | null,
     private renderer: Renderer2,
     private isLoadingService: IsLoadingService,
     private el: ElementRef<HTMLElement>,
     private componentFactoryResolver: ComponentFactoryResolver,
     private injector: Injector,
-  ) {}
+  ) {
+    this.config = config || {};
+  }
 
   ngOnChanges(changes: {
     swIsLoadingSpinner?: SimpleChange;
