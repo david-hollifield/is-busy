@@ -1,10 +1,9 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { RouterModule } from '@angular/router';
-import { APP_BASE_HREF } from '@angular/common';
 import { IsLoadingDirectiveModule } from './is-loading.directive.module';
-import { IsLoadingService } from '../is-loading.service';
+import { IsLoadingService } from '../../is-loading.service';
 import { IsLoadingDirective } from './is-loading.directive';
+import { RouterTestingModule } from '@angular/router/testing';
 
 @Component({
   selector: 'sw-test',
@@ -49,21 +48,17 @@ describe('IsLoadingDirective', () => {
 
   beforeEach(async(async () => {
     const testingModule = TestBed.configureTestingModule({
-      imports: [IsLoadingDirectiveModule, RouterModule.forRoot([])],
+      imports: [IsLoadingDirectiveModule, RouterTestingModule],
       declarations: [TestComponent],
-      providers: [{ provide: APP_BASE_HREF, useValue: '/' }],
     });
 
     await testingModule.compileComponents();
 
     isLoadingService = testingModule.get(IsLoadingService);
-  }));
-
-  beforeEach(() => {
     fixture = TestBed.createComponent(TestComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
-  });
+  }));
 
   it('should create', () => {
     expect(component).toBeTruthy();

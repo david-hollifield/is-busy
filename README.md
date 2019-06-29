@@ -2,7 +2,7 @@
 
 [![NPM version](https://flat.badgen.net/npm/v/@service-work/is-loading)](https://www.npmjs.com/package/@service-work/is-loading) [![Size when minified & gzipped](https://flat.badgen.net/bundlephobia/minzip/@service-work/is-loading)](https://bundlephobia.com/result?p=@service-work/is-loading)
 
-[IsLoadingService](#isloadingservice) is a simple angular service for tracking whether your app, or parts of it, are loading. By using `ngIf` and subscribing to its `isLoading$()` method, you can easily show and hide loading indicators. There is also an optional [IsLoadingDirective](#isloadingdirective) that makes it easy to add a loading indicator (and/or disable) HTML elements while loading is happening.
+[IsLoadingService](#isloadingservice) is a simple angular service that makes it easy to track whether your app, or parts of it, are loading. The optional companion [IsLoadingModule](#isloadingmodule) contains an [IsLoadingPipe](#isloadingpipe) that makes it easy to subscribe to IsLoadingService inside a component's template, as well as an [IsLoadingDirective](#isloadingdirective) that makes it easy to add a loading indicator (and/or disable) HTML elements while loading is happening.
 
 You can install it with
 
@@ -14,14 +14,40 @@ yarn add @service-work/is-loading
 npm install @service-work/is-loading
 ```
 
+### Basic example
+
+This simple example makes use of the `IsLoadingPipe` and will automatically trigger the `MatProgressBar` whenever router navigation is happening. This works because the `IsLoadingPipe` depends on the `IsLoadingService`, which automatically subscribes to router events.
+
+```ts
+@Component({
+  selector: 'app-root',
+  template: `
+    <mat-progress-bar
+      *ngIf="'default' | swIsLoading | async"
+      mode="indeterminate"
+      color="warn"
+      style="position: absolute; top: 0; z-index: 100;"
+    >
+    </mat-progress-bar>
+
+    <router-outlet></router-outlet>
+  `,
+})
+export class AppComponent {}
+```
+
 ### Table of Contents
 
 - [IsLoadingService](#isloadingservice)
   - [Advanced Usage](#advanced-usage)
   - [Interface](#interface)
-- [IsLoadingDirective](#isloadingdirective)
+- [IsLoadingModule](#isloadingmodule)
+  - [IsLoadingPipe](#isloadingpipe)
+  - [IsLoadingDirective](#isloadingdirective)
 
 ## IsLoadingService
+
+_The following examples assume you are using `IsLoadingService` by itself, without the [`IsLoadingModule`](#isloadingmodule)._
 
 At its most basic, you can import the service into your root component and use `ngIf` + the `AsyncPipe` to show a loading indicator during page navigation.
 
@@ -32,7 +58,7 @@ Example:
   selector: 'app-root',
   template: `
     <mat-progress-bar
-      *ngIf="loadingService.isLoading$() | async"
+      *ngIf="isLoading | async"
       mode="indeterminate"
       color="warn"
       style="position: absolute; top: 0; z-index: 100;"
@@ -43,7 +69,12 @@ Example:
   `,
 })
 export class AppComponent implements OnInit {
-  constructor(public loadingService: IsLoadingService) {}
+  // Note, because `IsLoadingService#isLoading$()` returns
+  // a new observable each time it is called, it shouldn't
+  // be called directly inside a component template.
+  isLoading = this.loadingService.isLoading$();
+
+  constructor(private loadingService: IsLoadingService) {}
 }
 ```
 
@@ -55,13 +86,15 @@ If you call `loadingService.add()` multiple times (because multiple things are l
 
 Internally, the IsLoadingService maintains an array of loading indicators. Whenever you call `add()` it pushes an indicator onto the stack, and `remove()` removes an indicator from the stack. `isLoading$()` is true so long as there are loading indicators on the stack.
 
-You can also pass a subscription (or promise or observable) argument to `loadingService.add(subscription)`. In this case, the loading service will push a loading indicator onto the stack, and then automatically remove it when the subscription or promise resolves (i.e. you don't need to manually call `remove()`). In the case of an observable, the loading service will `take(1)` and subscribe to the next emission only.
+You can also pass a `Subscription`, `Promise`, or `Observable` argument to `loadingService.add(subscription)`. In this case, the loading service will push a loading indicator onto the stack, and then automatically remove it when the subscription or promise resolves (i.e. you don't need to manually call `remove()`). In the case of an observable, the loading service will `take(1)` and subscribe to the next emission only.
 
 If you just want to check the current value of `isLoading$()`, you can call `isLoading()` (without the `$`) to simply get a boolean value.
 
+Helpfully, if `loadingService.add()` is called with a `Promise`, `Subscription`, or `Observable` argument, that argument will be returned from the method. This simplifies method chaining. For example, in `await isLoading.add(promise)` the `await` is referring to the `promise` variable.
+
 ### Advanced Usage
 
-For more advanced scenarios, you can call `add()` with an options object containing a single `key` property. The key allows you to track the loading of different things seperately. Any truthy value can be used as a key. The key option for `add()` is intended to be used in conjunction with `key` options for `isLoading$()` and `remove()`.
+For more advanced scenarios, you can call `add()` with an options object containing a `key` property. The key allows you to track the loading of different things seperately. The key argument accepts a string, object, or symbol, or an array of these. The key option for `add()` is intended to be used in conjunction with `key` options for `isLoading$()` and `remove()`. If you pass an array of keys to `add()`, then each of those keys will be marked as loading (`remove()` works similarly).
 
 Example:
 
@@ -94,36 +127,77 @@ class MyCustomComponent implements OnInit, AfterViewInit {
 }
 ```
 
-#### A note about _dynamic_ keys
-
-Using dynamic values for `IsLoadingService` keys is not supported at the moment. This is because `IsLoadingService` keys (and their values) are cached for the lifetime of an application. In general, this shouldn't be a problem as I can't imagine a typical application using more than a few hundred unique keys--that is, unless you try using dynamic keys. In the dynamic key scenerio, your application could quickly acrue a memory leak.
-
 ### Interface
 
 ```typescript
 class IsLoadingService {
-  isLoading$(options?: LoadingOptions): Observable<boolean>;
+  isLoading$(options?: IGetLoadingOptions): Observable<boolean>;
 
-  isLoading(options?: LoadingOptions): boolean;
+  isLoading(options?: IGetLoadingOptions): boolean;
 
   add(): void;
-  add(options: LoadingOptions): void;
+  add(options: IUpdateLoadingOptions): void;
   add<T extends Subscription | Promise<unknown> | Observable<unknown>>(
     sub: T,
-    options?: LoadingOptions,
+    options?: IUpdateLoadingOptions,
   ): T;
 
   remove(): void;
-  remove(options: LoadingOptions): void;
-  remove(sub: Subscription | Promise<unknown>, options?: LoadingOptions): void;
+  remove(options: IUpdateLoadingOptions): void;
+  remove(
+    sub: Subscription | Promise<unknown>,
+    options?: IUpdateLoadingOptions,
+  ): void;
 }
 
-interface LoadingOptions {
-  key?: unknown;
+type Key = string | object | symbol;
+
+interface IGetLoadingOptions {
+  key?: Key;
+}
+
+interface IUpdateLoadingOptions {
+  key?: Key | Key[];
 }
 ```
 
-## IsLoadingDirective
+## IsLoadingModule
+
+The optional [IsLoadingModule](#isloadingmodule) exports an [IsLoadingPipe](#isloadingpipe) and an [IsLoadingDirective](#isloadingdirective). If desired, you can also import just the IsLoadingDirective or just the IsLoadingPipe via the `IsLoadingDirectiveModule` or the `IsLoadingPipeModule`.
+
+### IsLoadingPipe
+
+_can be imported directly via `IsLoadingPipeModule`_
+
+The IsLoadingPipe is a companion pipe to IsLoadingService that makes it easy to subscribe to loading status from within an angular component. The pipe accepts a single `Key` value and returns an observable subscribing to that value. Because of this, its output should be also piped through the Angular built-in `AsyncPipe`.
+
+- _If you are wondering, how is this pipe different from simply using `IsLoadingService#isLoading$()` inside a template? The difference is that `IsLoadingPipe` memoizes the return and plays nice with Angular Change Detection._
+
+Example:
+
+- Note: the `"default"` key is the key used when you call `add()` without arguments.
+
+```ts
+@Component({
+  selector: 'app-root',
+  template: `
+    <mat-progress-bar
+      *ngIf="'default' | swIsLoading | async"
+      mode="indeterminate"
+      color="warn"
+      style="position: absolute; top: 0; z-index: 100;"
+    >
+    </mat-progress-bar>
+
+    <router-outlet></router-outlet>
+  `,
+})
+export class AppComponent implements OnInit {}
+```
+
+### IsLoadingDirective
+
+_can be imported directly via `IsLoadingDirectiveModule`_
 
 The IsLoadingDirective is a companion directive to IsLoadingService that makes it easy to add a loading indicator (and/or disable) HTML elements while loading is happening.
 
@@ -143,7 +217,7 @@ export class MyComponent {}
 
 If you call `isLoadingService.add({key: 'button'})`, the `"button"` key will be marked as loading. This will automatically disable the `button` element in the `example-component` and apply the `sw-is-loading` css class to the element. When loading for the `"button"` key stops, the `button` element will be re-enabled and the `sw-is-loading` class will be removed. Additionally, because `[swIsLoading]` is applied to a `button` element, a `sw-is-loading-spinner` child element is added to the DOM (more on this below).
 
-### Directive API
+#### Directive API
 
 If you simply apply `swIsLoading` to an HTML element, that element will be associated with the default IsLoadingService key (the key that is triggered when you call `isLoadingService.add()` without specifying a `key`). If you provide a string argument to the `swIsLoading` directive, i.e. `swIsLoading='my-key'`, then that element will be associated with that IsLoadingService key (e.g. `"my-key"`) rather than the default key. By default, when loading is triggered for an element, the css class `sw-is-loading` is applied to it, and the element gets the `disabled="disabled"` html attribute.
 

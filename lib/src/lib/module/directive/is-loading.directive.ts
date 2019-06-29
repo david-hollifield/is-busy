@@ -14,7 +14,7 @@ import {
   Optional,
 } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
-import { IsLoadingService } from '../is-loading.service';
+import { IsLoadingService } from '../../is-loading.service';
 import { IsLoadingSpinnerComponent } from './is-loading-spinner.component';
 import {
   SW_IS_LOADING_DIRECTIVE_CONFIG,
