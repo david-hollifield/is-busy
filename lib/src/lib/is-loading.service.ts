@@ -4,35 +4,46 @@ import {
   distinctUntilChanged,
   debounceTime,
   filter,
-  take
+  take,
 } from 'rxjs/operators';
 import {
   Router,
   NavigationStart,
   NavigationEnd,
   NavigationCancel,
-  NavigationError
+  NavigationError,
 } from '@angular/router';
 
-export interface LoadingOptions {
-  key?: unknown;
+export type Key = string | object | symbol;
+
+export interface IGetLoadingOptions {
+  key?: Key;
+}
+
+export interface IUpdateLoadingOptions {
+  key?: Key | Key[];
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class IsLoadingService {
-  private defaultKey = Symbol('Default loading key');
-  private loadingSubjects = new Map<unknown, BehaviorSubject<boolean>>();
-  private loadingObservables = new Map<unknown, Observable<boolean>>();
+  private defaultKey = 'default';
+
+  // provides an observable indicating if a particular key is loading
+  private loadingSubjects = new Map<Key, BehaviorSubject<boolean>>();
+
+  // tracks how many "things" are loading for each key
   private loadingStacks = new Map<
     unknown,
     (true | Subscription | Promise<unknown>)[]
   >();
 
-  constructor(router: Router) {
-    this.ensureKey(this.defaultKey);
+  // tracks which keys are being watched so that unused keys
+  // can be deleted/garbage collected.
+  private loadingKeyIndex = new Map<Key, number>();
 
+  constructor(router: Router) {
     router.events
       .pipe(
         filter(
@@ -40,8 +51,8 @@ export class IsLoadingService {
             event instanceof NavigationStart ||
             event instanceof NavigationEnd ||
             event instanceof NavigationCancel ||
-            event instanceof NavigationError
-        )
+            event instanceof NavigationError,
+        ),
       )
       .subscribe(event => {
         if (event instanceof NavigationStart) {
@@ -68,63 +79,109 @@ export class IsLoadingService {
    * Internally, *isLoading* observables are `BehaviorSubject`s, so
    * they will return values immediately upon subscription.
    *
-   * Example:
-   ```
-    class MyCustomComponent implements OnInit {
-      constructor(private loadingService: IsLoadingService) {}
-
-      ngOnInit() {
-        this.loadingService.isLoading$().subscribe(value => {
-          // ... do stuff
-        })
-
-        this.loadingService.isLoading$({key: MyCustomComponent}).subscribe(value => {
-          // ... do stuff
-        })
-      }
-    }
-   ```
+   * When called, this method creates a new observable and returns it.
+   * This means that you cannot use this method directly in an Angular
+   * template because each time the method is called it will look
+   * (to Angular change detection) like the value has changed. To make
+   * subscribing in templates easier, check out the `IsLoadingPipe`.
+   * Alternatively, store the observable returned from this method in
+   * a variable on your component and use that variable inside your
+   * template.
    *
-   * @param args an optional argument object with a `key` prop
+   * Example:
+   *
+   * ```ts
+   *  class MyCustomComponent implements OnInit {
+   *    variableForUseInTemplate: Observable<boolean>;
+   *
+   *    constructor(private loadingService: IsLoadingService) {}
+   *
+   *    ngOnInit() {
+   *      this.variableForUseInTemplate =
+   *        this.loadingService.isLoading$({key: 'button'});
+   *
+   *      this.loadingService.isLoading$().subscribe(value => {
+   *        // ... do stuff
+   *      });
+   *
+   *      this.loadingService
+   *        .isLoading$({key: MyCustomComponent})
+   *        .subscribe(value => {
+   *          // ... do stuff
+   *        });
+   *    }
+   *  }
+   * ```
+   *
+   * @param args.key optionally specify the key to subscribe to
    */
-  isLoading$(args: LoadingOptions = {}): Observable<boolean> {
-    if (!args.key) {
-      // small performance optimization for the default key
-      return this.loadingObservables.get(this.defaultKey)!;
-    }
+  isLoading$(args: IGetLoadingOptions = {}): Observable<boolean> {
+    const keys = this.normalizeKeys(args.key);
 
-    const key = this.ensureKey(args.key);
+    return new Observable<boolean>(observer => {
+      // this function will called each time this
+      // Observable is subscribed to.
+      this.indexKeys(keys);
 
-    return this.loadingObservables.get(key)!;
+      const subscription = this.loadingSubjects
+        .get(keys[0])!
+        .pipe(
+          distinctUntilChanged(),
+          debounceTime(10),
+          distinctUntilChanged(),
+        )
+        .subscribe({
+          next(value) {
+            observer.next(value);
+          },
+          error(err) {
+            observer.error(err);
+          },
+          complete() {
+            observer.complete();
+          },
+        });
+
+      // the return value is the teardown function,
+      // which will be invoked when the new
+      // Observable is unsubscribed from.
+      return () => {
+        subscription.unsubscribe();
+        this.deIndexKeys(keys);
+      };
+    });
   }
 
   /**
    * Same as `isLoading$()` except a boolean is returned,
    * rather than an observable.
    *
-   * @param args an optional argument object with a `key` prop
+   * @param args.key optionally specify the key to check
    */
-  isLoading(args: LoadingOptions = {}): boolean {
-    if (!args.key) {
-      // small performance optimization for the default key
-      return this.loadingSubjects.get(this.defaultKey)!.value;
-    }
+  isLoading(args: IGetLoadingOptions = {}): boolean {
+    const key = this.normalizeKeys(args.key)[0];
+    const obs = this.loadingSubjects.get(key);
 
-    const key = this.ensureKey(args.key);
-
-    return this.loadingSubjects.get(key)!.value;
+    return (obs && obs.value) || false;
   }
 
   /**
    * Used to indicate that *something* has started loading.
    *
-   * Optionally, a key can be passed to track the loading
+   * Optionally, a key or keys can be passed to track the loading
    * of different things.
    *
    * You can pass a `Subscription`, `Promise`, or `Observable`
-   * argument, or you can call `add()` without arguments.
+   * argument, or you can call `add()` without arguments. If
+   * this method is called with a `Subscription`, `Promise`,
+   * or `Observable` argument, this method returns that argument.
+   * This is to make it easier for you to chain off of `add()`.
    *
-   * - If called without arguments, the "keyless" key is
+   * Example: `await isLoadingService.add(promise);`
+   *
+   * Options:
+   *
+   * - If called without arguments, the `"default"` key is
    *   marked as loading. It will remain loading until you
    *   manually call `remove()` once. If you call `add()`
    *   twice without arguments, you will need to call
@@ -142,60 +199,70 @@ export class IsLoadingService {
    *   IsLoadingService will unsubscribe from the
    *   observable and mark the key as no longer loading.
    *
-   * If you pass a `Subscription`, `Promise`, or
-   * `Observable` argument to `add()`, then `add()` will
-   * return that argument. This is to make it easier for
-   * you to chain off of `add()`.
-   *
-   * Example: `await isLoadingService.add(promise);`
-   *
    * Finally, as previously noted the key option allows you
    * to track the loading of different things seperately.
    * Any truthy value can be used as a key. The key option
    * for `add()` is intended to be used in conjunction with
-   * the `key` option for `isLoading$()` and `remove()`.
+   * the `key` option for `isLoading$()` and `remove()`. If
+   * you pass multiple keys to `add()`, each key will be
+   * marked as loading.
    *
    * Example:
-   ```
-    class MyCustomComponent implements OnInit, AfterViewInit {
-      constructor(
-        private loadingService: IsLoadingService,
-        private myCustomDataService: MyCustomDataService,
-      ) {}
-
-      ngOnInit() {
-        this.loadingService.add({key: MyCustomComponent})
-
-        const subscription = this.myCustomDataService.getData().subscribe()
-
-        // Note, we don't need to call remove() when calling
-        // add() with a subscription
-        this.loadingService.add(subscription, {
-          key: 'getting-data'
-        })
-      }
-
-      ngAfterViewInit() {
-        this.loadingService.remove({key: MyCustomComponent})
-      }
-    }
-   ```
+   *
+   * ```ts
+   *  class MyCustomComponent implements OnInit, AfterViewInit {
+   *    constructor(
+   *      private loadingService: IsLoadingService,
+   *      private myCustomDataService: MyCustomDataService,
+   *    ) {}
+   *
+   *    ngOnInit() {
+   *      const subscription = this.myCustomDataService.getData().subscribe();
+   *
+   *      // Note, we don't need to call remove() when calling
+   *      // add() with a subscription
+   *      this.loadingService.add(subscription, {
+   *        key: 'getting-data'
+   *      });
+   *
+   *      // Here we mark `MyCustomComponent` as well as the "default" key
+   *      // as loading, and then mark them as no longer loading in
+   *      // ngAfterViewInit()
+   *      this.loadingService.add({key: [MyCustomComponent, 'default']});
+   *    }
+   *
+   *    ngAfterViewInit() {
+   *      this.loadingService.remove({key: [MyCustomComponent, 'default']})
+   *    }
+   *
+   *    async submit(data: any) {
+   *      // here we take advantage of the fact that `add()` returns the
+   *      // Promise passed to it.
+   *      await this.loadingService.add(
+   *        this.myCustomDataService.updateData(data),
+   *        { key: 'button' }
+   *      )
+   *
+   *      // do stuff...
+   *    }
+   *  }
+   * ```
    *
    * @return If called with a `Subscription`, `Promise` or `Observable`,
    *         the Subscription/Promise/Observable is returned.
    *         This allows code like `await this.isLoadingService.add(promise)`.
    */
   add(): void;
-  add(options: LoadingOptions): void;
+  add(options: IUpdateLoadingOptions): void;
   add<T extends Subscription | Promise<unknown> | Observable<unknown>>(
     sub: T,
-    options?: LoadingOptions
+    options?: IUpdateLoadingOptions,
   ): T;
   add(
-    first?: Subscription | Promise<unknown> | LoadingOptions,
-    second?: LoadingOptions
+    first?: Subscription | Promise<unknown> | IUpdateLoadingOptions,
+    second?: IUpdateLoadingOptions,
   ) {
-    let key: unknown;
+    let keyParam: Key | Key[] | undefined;
     let sub: Subscription | Promise<unknown> | undefined;
 
     if (first instanceof Subscription) {
@@ -211,29 +278,39 @@ export class IsLoadingService {
       // If the promise is already resolved, this executes syncronously
       first.then(
         () => this.remove(first, second),
-        () => this.remove(first, second)
+        () => this.remove(first, second),
       );
     } else if (first instanceof Observable) {
       sub = first.pipe(take(1)).subscribe();
 
       sub.add(() => this.remove(sub as Subscription, second));
     } else if (first) {
-      key = this.ensureKey(first.key);
+      keyParam = first.key;
     }
 
-    if (!key) {
-      key = this.ensureKey(second && second.key);
+    if (second && second.key) {
+      keyParam = second.key;
     }
 
-    this.loadingStacks.get(key)!.push(sub || true);
+    const keys = this.normalizeKeys(keyParam);
 
-    this.updateLoadingStatus(key);
+    this.indexKeys(keys);
+
+    keys.forEach(key => {
+      this.loadingStacks.get(key)!.push(sub || true);
+
+      this.updateLoadingStatus(key);
+    });
 
     return first instanceof Observable ? first : sub;
   }
 
   /**
-   * Used to indicate that something has stopped loading
+   * Used to indicate that something has stopped loading.
+   *
+   * - Note: if you call `add()` with a `Subscription`,
+   *   `Promise`, or `Observable` argument, you do not need
+   *   to manually call `remove().
    *
    * When called without arguments, `remove()`
    * removes a loading indicator from the default
@@ -242,51 +319,57 @@ export class IsLoadingService {
    * observable will be marked as loading.
    *
    * In more advanced usage, you can call `remove()` with
-   * an options object which accepts a single `key` property.
+   * an options object which accepts a `key` property.
    * The key allows you to track the loading of different
    * things seperately. Any truthy value can be used as a
    * key. The key option for `remove()` is intended to be
    * used in conjunction with the `key` option for
-   * `isLoading$()` and `add()`.
+   * `isLoading$()` and `add()`. If you pass an array of
+   * keys to `remove()`, then each key will be marked as
+   * no longer loading.
    *
    * Example:
-   ```
-    class MyCustomComponent implements OnInit, AfterViewInit {
-      constructor(private loadingService: IsLoadingService) {}
-
-      ngOnInit() {
-        // Pushes a loading indicator onto the default stack
-        this.loadingService.add()
-      }
-
-      ngAfterViewInit() {
-        // Removes a loading indicator from the default stack
-        this.loadingService.remove()
-      }
-
-      performLongAction() {
-        // Pushes a loading indicator onto the `'long-action'`
-        // stack
-        this.loadingService.add({key: 'long-action'})
-      }
-
-      finishLongAction() {
-        // Removes a loading indicator from the `'long-action'`
-        // stack
-        this.loadingService.remove({key: 'long-action'})
-      }
-    }
-   ```
+   *
+   * ```ts
+   *  class MyCustomComponent implements OnInit, AfterViewInit {
+   *    constructor(private loadingService: IsLoadingService) {}
+   *
+   *    ngOnInit() {
+   *      // Pushes a loading indicator onto the `"default"` stack
+   *      this.loadingService.add()
+   *    }
+   *
+   *    ngAfterViewInit() {
+   *      // Removes a loading indicator from the default stack
+   *      this.loadingService.remove()
+   *    }
+   *
+   *    performLongAction() {
+   *      // Pushes a loading indicator onto the `'long-action'`
+   *      // stack
+   *      this.loadingService.add({key: 'long-action'})
+   *    }
+   *
+   *    finishLongAction() {
+   *      // Removes a loading indicator from the `'long-action'`
+   *      // stack
+   *      this.loadingService.remove({key: 'long-action'})
+   *    }
+   *  }
+   * ```
    *
    */
   remove(): void;
-  remove(options: LoadingOptions): void;
-  remove(sub: Subscription | Promise<unknown>, options?: LoadingOptions): void;
+  remove(options: IUpdateLoadingOptions): void;
   remove(
-    first?: Subscription | Promise<unknown> | LoadingOptions,
-    second?: LoadingOptions
+    sub: Subscription | Promise<unknown>,
+    options?: IUpdateLoadingOptions,
+  ): void;
+  remove(
+    first?: Subscription | Promise<unknown> | IUpdateLoadingOptions,
+    second?: IUpdateLoadingOptions,
   ) {
-    let key: unknown;
+    let keyParam: Key | Key[] | undefined;
     let sub: Subscription | Promise<unknown> | undefined;
 
     if (first instanceof Subscription) {
@@ -294,44 +377,84 @@ export class IsLoadingService {
     } else if (first instanceof Promise) {
       sub = first;
     } else if (first) {
-      key = this.ensureKey(first.key);
+      keyParam = first.key;
     }
 
-    if (!key) {
-      key = this.ensureKey(second && second.key);
+    if (second && second.key) {
+      keyParam = second.key;
     }
 
-    const loadingStack = this.loadingStacks.get(key)!;
+    const keys = this.normalizeKeys(keyParam);
 
-    loadingStack.splice(loadingStack.indexOf(sub || true), 1);
+    keys.forEach(key => {
+      const loadingStack = this.loadingStacks.get(key)!;
 
-    this.updateLoadingStatus(key);
+      loadingStack.splice(loadingStack.indexOf(sub || true), 1);
+
+      this.updateLoadingStatus(key);
+    });
+
+    this.deIndexKeys(keys);
   }
 
-  private ensureKey(key: unknown) {
-    if (key && !this.loadingObservables.has(key)) {
-      const subject = new BehaviorSubject(false);
-
-      this.loadingSubjects.set(key, subject);
-
-      this.loadingObservables.set(
-        key,
-        subject.pipe(
-          distinctUntilChanged(),
-          debounceTime(10),
-          distinctUntilChanged()
-        )
-      );
-
-      this.loadingStacks.set(key, []);
-    } else if (!key) {
-      key = this.defaultKey;
-    }
-
-    return key;
+  private normalizeKeys(key?: Key | Key[]): Key[] {
+    if (!key) key = [this.defaultKey];
+    else if (!Array.isArray(key)) key = [key];
+    return key as Key[];
   }
 
-  private updateLoadingStatus(key: unknown) {
+  /**
+   * `indexKeys()` along with `deIndexKeys()` helps us track which
+   * keys are being watched so that unused keys can be deleted
+   * / garbage collected.
+   *
+   * When `indexKeys()` is called with an array of keys, it means
+   * that each of those keys has at least one "thing" interested
+   * in it. Therefore, we need to make sure that a loadingSubject
+   * and loadingStack exists for that key. We also need to index
+   * the number of "things" interested in that key in the
+   * `loadingKeyIndex` map.
+   *
+   * When `deIndexKeys()` is called with an array of keys, it
+   * means that some "thing" is no longer interested in each
+   * of those keys. Therefore, we need to re-index
+   * the number of "things" interested in each key. For keys
+   * that no longer have anything interested in them, we need
+   * to delete the associated `loadingKeyIndex`, `loadingSubject`,
+   * and `loadingStack`. So that the `key` can be properly
+   * released for garbage collection.
+   */
+
+  private indexKeys(keys: Key[]) {
+    keys.forEach(key => {
+      if (this.loadingKeyIndex.has(key)) {
+        const curr = this.loadingKeyIndex.get(key)!;
+        this.loadingKeyIndex.set(key, curr + 1);
+      } else {
+        const subject = new BehaviorSubject(false);
+
+        this.loadingKeyIndex.set(key, 1);
+        this.loadingSubjects.set(key, subject);
+        this.loadingStacks.set(key, []);
+      }
+    });
+  }
+
+  private deIndexKeys(keys: Key[]) {
+    keys.forEach(key => {
+      const curr = this.loadingKeyIndex.get(key)!;
+
+      if (curr === 1) {
+        this.loadingKeyIndex.delete(key);
+        this.loadingSubjects.delete(key);
+        this.loadingStacks.delete(key);
+      } else {
+        this.loadingKeyIndex.set(key, curr - 1);
+      }
+    });
+  }
+
+  private updateLoadingStatus(key: Key) {
     this.loadingSubjects
       .get(key)!
       .next(this.loadingStacks.get(key)!.length > 0);

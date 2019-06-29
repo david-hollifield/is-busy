@@ -1,6 +1,15 @@
 # Changelog
 
-### 1.3.0 / 2019-6-27
+### 2.0.0 / 2019-6-29
+
+- [BREAKING] IsLoadingService updated to support dynamic keys.
+  - Technically, IsLoadingService has been updated to allow for garbage collecting of unused keys.
+  - Unfortunately, this means that `IsLoadingService#isLoading$()` will now return a new observable every time it is called, make it unsuitable for calling directly inside a component template. Instead, consider the new IsLoadingPipe.
+- [FEATURE] `IsLoadingService#add()` and `IsLoadingService#remove()` now both accept an array of keys.
+- [FEATURE] `IsLoadingPipe` added.
+- [FEATURE] `IsLoadingModule` added which combines `IsLoadingPipe` and `IsLoadingDirective`.
+
+### 1.3.1 / 2019-6-27
 
 - [FEATURE] `IsLoadingDirectiveModule` added
 
