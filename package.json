@@ -28,8 +28,8 @@
     "pub": "yarn test --watch=false && yarn ts-node tasks/build.ts && yarn build && yarn publish dist/is-loading"
   },
   "peerDependencies": {
-    "@angular/core": "^7.0.0",
-    "@angular/router": "^7.0.0",
+    "@angular/core": "^7.0.0 || ^8.0.0",
+    "@angular/router": "^7.0.0 || ^8.0.0",
     "rxjs": "^6.0.0"
   },
   "devDependencies": {

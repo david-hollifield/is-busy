@@ -1,6 +1,6 @@
 # Angular IsLoading
 
-[![NPM version](https://flat.badgen.net/npm/v/@service-work/is-loading)](https://www.npmjs.com/package/@service-work/is-loading) [![Size when minified & gzipped](https://flat.badgen.net/bundlephobia/minzip/@service-work/is-loading)](https://bundlephobia.com/result?p=@service-work/is-loading)
+[![NPM version](https://flat.badgen.net/npm/v/@service-work/is-loading)](https://www.npmjs.com/package/@service-work/is-loading) [![Size when minified & gzipped](https://flat.badgen.net/bundlephobia/minzip/@service-work/is-loading)](https://bundlephobia.com/result?p=@service-work/is-loading) ![Angular versions 7 and 8 supported](https://badgen.net/badge/Angular/v7%20%7C%7C%20v8/cyan)
 
 [IsLoadingService](#isloadingservice) is a simple angular service that makes it easy to track whether your app, or parts of it, are loading. The optional companion [IsLoadingModule](#isloadingmodule) contains an [IsLoadingPipe](#isloadingpipe) that makes it easy to subscribe to IsLoadingService inside a component's template, as well as an [IsLoadingDirective](#isloadingdirective) that makes it easy to add a loading indicator (and/or disable) HTML elements while loading is happening.
 
