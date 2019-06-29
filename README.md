@@ -14,6 +14,8 @@ yarn add @service-work/is-loading
 npm install @service-work/is-loading
 ```
 
+_For those interested: by itself, the minzipped size of IsLoadingService is a little under 1kb._
+
 ### Basic example
 
 This simple example makes use of the `IsLoadingPipe` and will automatically trigger the `MatProgressBar` whenever router navigation is happening. This works because the `IsLoadingPipe` depends on the `IsLoadingService`, which automatically subscribes to router events.
