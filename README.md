@@ -2,7 +2,7 @@
 
 [![NPM version](https://flat.badgen.net/npm/v/@service-work/is-loading)](https://www.npmjs.com/package/@service-work/is-loading) [![Size when minified & gzipped](https://flat.badgen.net/bundlephobia/minzip/@service-work/is-loading)](https://bundlephobia.com/result?p=@service-work/is-loading)
 
-[IsLoadingService](#isloadingservice) is a simple angular service for tracking whether your app, or parts of it, are loading. By using `ngIf` and subscribing to its `isLoading$()` method, you can easily show and hide loading indicators. There is also an optional companion directive [IsLoadingDirective](#isloadingdirective) which can help you automatically mark or disable a button (or other HTML element) when loading.
+[IsLoadingService](#isloadingservice) is a simple angular service for tracking whether your app, or parts of it, are loading. By using `ngIf` and subscribing to its `isLoading$()` method, you can easily show and hide loading indicators. There is also an optional [IsLoadingDirective](#isloadingdirective) that makes it easy to add a loading indicator (and/or disable) HTML elements while loading is happening.
 
 You can install it with
 
@@ -125,8 +125,69 @@ interface LoadingOptions {
 
 ## IsLoadingDirective
 
-description coming soon...
+The IsLoadingDirective is a companion directive to IsLoadingService that makes it easy to add a loading indicator (and/or disable) HTML elements while loading is happening.
+
+For example, take the following `example-component`:
+
+```ts
+@Component({
+  selector: 'example-component',
+  template: `
+    <button swIsLoading="button" (click)="submit()">
+      Submit Form
+    </button>
+  `,
+})
+export class MyComponent {}
+```
+
+If you call `isLoadingService.add({key: 'button'})`, the `"button"` key will be marked as loading. This will automatically disable the `button` element in the `example-component` and apply the `sw-is-loading` css class to the element. When loading for the `"button"` key stops, the `button` element will be re-enabled and the `sw-is-loading` class will be removed. Additionally, because `[swIsLoading]` is applied to a `button` element, a `sw-is-loading-spinner` child element is added to the DOM (more on this below).
+
+### Directive API
+
+If you simply apply `swIsLoading` to an HTML element, that element will be associated with the default IsLoadingService key (the key that is triggered when you call `isLoadingService.add()` without specifying a `key`). If you provide a string argument to the `swIsLoading` directive, i.e. `swIsLoading='my-key'`, then that element will be associated with that IsLoadingService key (e.g. `"my-key"`) rather than the default key. By default, when loading is triggered for an element, the css class `sw-is-loading` is applied to it, and the element gets the `disabled="disabled"` html attribute.
+
+Additionally, if the IsLoadingDirective is applied to an HTML button element or an HTML anchor element, then a `<sw-is-loading-spinner class='sw-is-loading-spinner'></sw-is-loading-spinner>` element is inserted into the DOM as a child of whatever element the IsLoadingDirective is applied to. This element can be used to automatically add a loading spinner next to the clicked button. The `sw-is-loading-spinner` has no default styling. If you need inspiration, there are lots of free css-spinners on the internet.
+
+Some examples:
+
+- https://tobiasahlin.com/spinkit/
+- https://projects.lukehaas.me/css-loaders/
+
+#### Directive Customization
+
+- By setting `[swIsLoadingDisableEl]='false'`, you can prevent an element from being disabled during loading.
+- By setting `[swIsLoadingSpinner]='true|false'`, you can either prevent a spinner element from being added to a button/anchor element, or you can add a `<sw-is-loading-spinner>` child element to an element which isn't an HTML button or anchor.
+- To customize the css class applied to elements when they are loading, you must supply a new global default.
+
+To provide new global defaults, you must re-provide the `SW_IS_LOADING_DIRECTIVE_CONFIG` token.
+
+Example:
+
+```ts
+import {
+  SW_IS_LOADING_DIRECTIVE_CONFIG,
+  ISWIsLoadingDirectiveConfig,
+} from '@service-work/is-loading';
+
+const myConfig: ISWIsLoadingDirectiveConfig = {
+  // disable element while loading (default: true)
+  disableEl: true,
+  // the class used to indicate loading (default: "sw-is-loading")
+  loadingClass: 'sw-is-loading',
+  // should a spinner element be added to the dom
+  // (default: varies --> true for button/anchor elements, false otherwise)
+  addSpinnerEl: undefined,
+};
+
+@NgModule({
+  providers: [{ provide: SW_IS_LOADING_DIRECTIVE_CONFIG, useValue: myConfig }],
+})
+export class MyModule {}
+```
 
 ## About
 
 This library has been made by John Carroll.
+
+Special thanks to the [Angular2PromiseButtonModule](https://github.com/johannesjo/angular2-promise-buttons) which was inspiration for the `IsLoadingDirective`.
