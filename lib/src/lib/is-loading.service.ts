@@ -147,7 +147,7 @@ export class IsLoadingService {
       // Observable is unsubscribed from.
       return () => {
         subscription.unsubscribe();
-        this.deIndexKeys(keys);
+        keys.forEach(key => this.deIndexKey(key));
       };
     });
   }
@@ -387,14 +387,21 @@ export class IsLoadingService {
     const keys = this.normalizeKeys(keyParam);
 
     keys.forEach(key => {
-      const loadingStack = this.loadingStacks.get(key)!;
+      const loadingStack = this.loadingStacks.get(key);
 
-      loadingStack.splice(loadingStack.indexOf(sub || true), 1);
+      // !loadingStack means that a user has called remove() needlessly
+      if (!loadingStack) return;
 
-      this.updateLoadingStatus(key);
+      const index = loadingStack.indexOf(sub || true);
+
+      if (index >= 0) {
+        loadingStack.splice(index, 1);
+
+        this.updateLoadingStatus(key);
+
+        this.deIndexKey(key);
+      }
     });
-
-    this.deIndexKeys(keys);
   }
 
   private normalizeKeys(key?: Key | Key[]): Key[] {
@@ -440,23 +447,21 @@ export class IsLoadingService {
     });
   }
 
-  private deIndexKeys(keys: Key[]) {
-    keys.forEach(key => {
-      const curr = this.loadingKeyIndex.get(key)!;
+  private deIndexKey(key: Key) {
+    const curr = this.loadingKeyIndex.get(key)!;
 
-      if (curr === 1) {
-        this.loadingKeyIndex.delete(key);
-        this.loadingSubjects.delete(key);
-        this.loadingStacks.delete(key);
-      } else {
-        this.loadingKeyIndex.set(key, curr - 1);
-      }
-    });
+    if (curr === 1) {
+      this.loadingKeyIndex.delete(key);
+      this.loadingSubjects.delete(key);
+      this.loadingStacks.delete(key);
+    } else {
+      this.loadingKeyIndex.set(key, curr - 1);
+    }
   }
 
   private updateLoadingStatus(key: Key) {
-    this.loadingSubjects
-      .get(key)!
-      .next(this.loadingStacks.get(key)!.length > 0);
+    const loadingStatus = this.loadingStacks.get(key)!.length > 0;
+
+    this.loadingSubjects.get(key)!.next(loadingStatus);
   }
 }

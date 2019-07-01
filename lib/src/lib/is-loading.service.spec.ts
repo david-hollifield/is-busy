@@ -751,4 +751,59 @@ describe('IsLoadingService', () => {
       expect(service['loadingStacks'].size).toBe(0);
     }),
   ));
+
+  /**
+   * This test makes sure that calling IsLoadingService#remove()
+   * more times than IsLoadingService#add() works properly--even
+   * when add() is also called with promises sometimes.
+   */
+  it('garbage collection with #remove', async(
+    inject([IsLoadingService], async (service: IsLoadingService) => {
+      const key = Symbol('key');
+
+      let resolve: () => void;
+
+      const promise = new Promise(res => {
+        resolve = res;
+      });
+
+      service.add(promise, { key });
+
+      expect(service['loadingKeyIndex'].size).toBe(1);
+      expect(service['loadingSubjects'].size).toBe(1);
+      expect(service['loadingStacks'].size).toBe(1);
+
+      service.remove({ key });
+
+      expect(service['loadingKeyIndex'].size).toBe(1);
+      expect(service['loadingSubjects'].size).toBe(1);
+      expect(service['loadingStacks'].size).toBe(1);
+
+      service.add({ key: [IsLoadingService, 'default'] });
+
+      expect(service['loadingKeyIndex'].size).toBe(3);
+      expect(service['loadingSubjects'].size).toBe(3);
+      expect(service['loadingStacks'].size).toBe(3);
+
+      service.remove({ key: [IsLoadingService, 'default', key] });
+
+      expect(service['loadingKeyIndex'].size).toBe(1);
+      expect(service['loadingSubjects'].size).toBe(1);
+      expect(service['loadingStacks'].size).toBe(1);
+
+      service.remove({ key });
+
+      expect(service['loadingKeyIndex'].size).toBe(1);
+      expect(service['loadingSubjects'].size).toBe(1);
+      expect(service['loadingStacks'].size).toBe(1);
+
+      resolve!();
+
+      await promise;
+
+      expect(service['loadingKeyIndex'].size).toBe(0);
+      expect(service['loadingSubjects'].size).toBe(0);
+      expect(service['loadingStacks'].size).toBe(0);
+    }),
+  ));
 });

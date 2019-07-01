@@ -1,5 +1,9 @@
 # Changelog
 
+### 2.0.2 / 2019-6-30
+
+- [FIX] bug that might occur if `IsLoadingService#remove()` was called needlessly
+
 ### 2.0.1 / 2019-6-29
 
 - [FIX] accept either Angular `^7.0.0 || ^8.0.0` as a peer dependency
