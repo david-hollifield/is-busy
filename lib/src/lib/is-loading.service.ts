@@ -1,18 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Subscription, Observable } from 'rxjs';
-import {
-  distinctUntilChanged,
-  debounceTime,
-  filter,
-  take,
-} from 'rxjs/operators';
-import {
-  Router,
-  NavigationStart,
-  NavigationEnd,
-  NavigationCancel,
-  NavigationError,
-} from '@angular/router';
+import { distinctUntilChanged, debounceTime, take } from 'rxjs/operators';
 
 export type Key = string | object | symbol;
 
@@ -28,7 +16,7 @@ export interface IUpdateLoadingOptions {
   providedIn: 'root',
 })
 export class IsLoadingService {
-  private defaultKey = 'default';
+  protected defaultKey = 'default';
 
   // provides an observable indicating if a particular key is loading
   private loadingSubjects = new Map<Key, BehaviorSubject<boolean>>();
@@ -43,25 +31,7 @@ export class IsLoadingService {
   // can be deleted/garbage collected.
   private loadingKeyIndex = new Map<Key, number>();
 
-  constructor(router: Router) {
-    router.events
-      .pipe(
-        filter(
-          event =>
-            event instanceof NavigationStart ||
-            event instanceof NavigationEnd ||
-            event instanceof NavigationCancel ||
-            event instanceof NavigationError,
-        ),
-      )
-      .subscribe(event => {
-        if (event instanceof NavigationStart) {
-          return this.add();
-        }
-
-        this.remove();
-      });
-  }
+  constructor() {}
 
   /**
    * Used to determine if something is loading or not.

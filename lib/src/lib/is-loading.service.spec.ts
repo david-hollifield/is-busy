@@ -2,13 +2,12 @@ import { TestBed, inject, async } from '@angular/core/testing';
 
 import { IsLoadingService } from './is-loading.service';
 import { take } from 'rxjs/operators';
-import { BehaviorSubject, defer, Subject } from 'rxjs';
-import { RouterTestingModule } from '@angular/router/testing';
+import { BehaviorSubject, Subject } from 'rxjs';
 
 describe('IsLoadingService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [RouterTestingModule],
+      imports: [],
       providers: [IsLoadingService],
     });
   });

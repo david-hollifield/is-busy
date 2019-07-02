@@ -1,5 +1,64 @@
 # Changelog
 
+### 3.0.0 / 2019-7-2
+
+- [BREAKING] removed `@angular/router` as a peer dependency. `IsLoadingService` no longer automatically subscribes to router navigation events.
+
+  - To achieve the same functionality as before, manually subscribe to router events in your app-root.
+  - ```ts
+    @Component({
+      selector: 'app-root',
+      template: `
+        <mat-progress-bar
+          *ngIf="isLoading | async"
+          mode="indeterminate"
+          color="warn"
+          style="position: absolute; top: 0; z-index: 100;"
+        >
+        </mat-progress-bar>
+
+        <router-outlet></router-outlet>
+      `,
+    })
+    export class AppComponent {
+      // Note, because `IsLoadingService#isLoading$()` returns
+      // a new observable each time it is called, it shouldn't
+      // be called directly inside a component template.
+      // Instead, you could use `IsLoadingPipe` to simplify this.
+      isLoading: Observable<boolean>;
+
+      constructor(
+        private isLoadingService: IsLoadingService,
+        private router: Router,
+      ) {}
+
+      ngOnInit() {
+        this.isLoading = this.isLoadingService.isLoading$();
+
+        this.router.events
+          .pipe(
+            filter(
+              event =>
+                event instanceof NavigationStart ||
+                event instanceof NavigationEnd ||
+                event instanceof NavigationCancel ||
+                event instanceof NavigationError,
+            ),
+          )
+          .subscribe(event => {
+            // if it's the start of navigation, `add()` a loading indicator
+            if (event instanceof NavigationStart) {
+              this.isLoadingService.add();
+              return;
+            }
+
+            // else navigation has ended, so `remove()` a loading indicator
+            this.isLoadingService.remove();
+          });
+      }
+    }
+    ```
+
 ### 2.0.2 / 2019-6-30
 
 - [FIX] bug that might occur if `IsLoadingService#remove()` was called needlessly
