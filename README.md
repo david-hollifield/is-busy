@@ -16,28 +16,6 @@ npm install @service-work/is-loading
 
 _For those interested: by itself, the minzipped size of IsLoadingService is a little under 1kb._
 
-### Basic example
-
-This simple example makes use of the `IsLoadingPipe` and will automatically trigger the `MatProgressBar` whenever router navigation is happening. This works because the `IsLoadingPipe` depends on the `IsLoadingService`, which automatically subscribes to router events.
-
-```ts
-@Component({
-  selector: 'app-root',
-  template: `
-    <mat-progress-bar
-      *ngIf="'default' | swIsLoading | async"
-      mode="indeterminate"
-      color="warn"
-      style="position: absolute; top: 0; z-index: 100;"
-    >
-    </mat-progress-bar>
-
-    <router-outlet></router-outlet>
-  `,
-})
-export class AppComponent {}
-```
-
 ### Table of Contents
 
 - [IsLoadingService](#isloadingservice)
@@ -70,17 +48,43 @@ Example:
     <router-outlet></router-outlet>
   `,
 })
-export class AppComponent implements OnInit {
-  // Note, because `IsLoadingService#isLoading$()` returns
-  // a new observable each time it is called, it shouldn't
-  // be called directly inside a component template.
-  isLoading = this.loadingService.isLoading$();
+export class AppComponent {
+  isLoading: Observable<boolean>;
 
-  constructor(private loadingService: IsLoadingService) {}
+  constructor(
+    private isLoadingService: IsLoadingService,
+    private router: Router,
+  ) {}
+
+  ngOnInit() {
+    // Note, because `IsLoadingService#isLoading$()` returns
+    // a new observable each time it is called, it shouldn't
+    // be called directly inside a component template.
+    this.isLoading = this.isLoadingService.isLoading$();
+
+    this.router.events
+      .pipe(
+        filter(
+          event =>
+            event instanceof NavigationStart ||
+            event instanceof NavigationEnd ||
+            event instanceof NavigationCancel ||
+            event instanceof NavigationError,
+        ),
+      )
+      .subscribe(event => {
+        // If it's the start of navigation, `add()` a loading indicator
+        if (event instanceof NavigationStart) {
+          this.isLoadingService.add();
+          return;
+        }
+
+        // Else navigation has ended, so `remove()` a loading indicator
+        this.isLoadingService.remove();
+      });
+  }
 }
 ```
-
-This works because the IsLoadingService automatically subscribes to router events and will emit `true` or `false` from `isLoading$()` as appropriate.
 
 If you want to manually indicate that something is loading, you can call the `loadingService.add()` method, and then call the `loadingService.remove()` method when loading has stopped.
 

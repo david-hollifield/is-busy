@@ -3,7 +3,6 @@ import { TestBed } from '@angular/core/testing';
 import { IsLoadingPipeModule } from './is-loading.pipe.module';
 import { IsLoadingService } from '../../is-loading.service';
 import { take } from 'rxjs/operators';
-import { RouterTestingModule } from '@angular/router/testing';
 
 describe('IsLoadingPipe', () => {
   let isLoadingService: IsLoadingService;
@@ -15,7 +14,7 @@ describe('IsLoadingPipe', () => {
 
   beforeEach(async () => {
     const testingModule = TestBed.configureTestingModule({
-      imports: [IsLoadingPipeModule, RouterTestingModule],
+      imports: [IsLoadingPipeModule],
       declarations: [],
     });
 

@@ -3,7 +3,6 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { IsLoadingDirectiveModule } from './is-loading.directive.module';
 import { IsLoadingService } from '../../is-loading.service';
 import { IsLoadingDirective } from './is-loading.directive';
-import { RouterTestingModule } from '@angular/router/testing';
 
 @Component({
   selector: 'sw-test',
@@ -48,7 +47,7 @@ describe('IsLoadingDirective', () => {
 
   beforeEach(async(async () => {
     const testingModule = TestBed.configureTestingModule({
-      imports: [IsLoadingDirectiveModule, RouterTestingModule],
+      imports: [IsLoadingDirectiveModule],
       declarations: [TestComponent],
     });
 
