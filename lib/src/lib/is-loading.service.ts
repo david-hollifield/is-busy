@@ -41,16 +41,11 @@ export class IsLoadingService {
    * containing a `key` property, returns the *isLoading* observable
    * corresponding to that key.
    *
-   * The default *isLoading* observable tracks the Angular router's
-   * navigation, in addition to any other events you manually tell it
-   * to track using `add()`. Observables for custom keys only
-   * track what you tell them to track.
-   *
    * Internally, *isLoading* observables are `BehaviorSubject`s, so
    * they will return values immediately upon subscription.
    *
    * When called, this method creates a new observable and returns it.
-   * This means that you cannot use this method directly in an Angular
+   * This means that you should not use this method directly in an Angular
    * template because each time the method is called it will look
    * (to Angular change detection) like the value has changed. To make
    * subscribing in templates easier, check out the `IsLoadingPipe`.
