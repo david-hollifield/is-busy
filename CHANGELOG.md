@@ -4,7 +4,7 @@
 
 - [BREAKING] removed `@angular/router` as a peer dependency. `IsLoadingService` no longer automatically subscribes to router navigation events.
 
-  - To achieve the same functionality as before, manually subscribe to router events in your app-root.
+  - To achieve the same functionality as before, subscribe to router events in your app-root.
   - ```ts
     @Component({
       selector: 'app-root',
