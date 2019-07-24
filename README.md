@@ -236,6 +236,8 @@ Some examples:
 - https://tobiasahlin.com/spinkit/
 - https://projects.lukehaas.me/css-loaders/
 
+You can also borrow the spinner styling from the [demo app](http://bit.ly/32JQOW1).
+
 #### Directive Customization
 
 - By setting `[swIsLoadingDisableEl]='false'`, you can prevent an element from being disabled during loading.
