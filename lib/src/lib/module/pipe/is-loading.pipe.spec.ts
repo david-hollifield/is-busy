@@ -12,7 +12,7 @@ describe('IsLoadingPipe', () => {
     await new Promise(res => setTimeout(res, ms));
   }
 
-  beforeEach(async () => {
+  beforeEach(() => {
     const testingModule = TestBed.configureTestingModule({
       imports: [IsLoadingPipeModule],
       declarations: [],

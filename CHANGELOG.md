@@ -1,5 +1,9 @@
 # Changelog
 
+### 3.0.1 / 2019-7-25
+
+- [FIX] ensure `IsLoadingPipe` and `IsLoadingDirective` use the root instance of `IsLoadingService`.
+
 ### 3.0.0 / 2019-7-2
 
 - [BREAKING] removed `@angular/router` as a peer dependency. `IsLoadingService` no longer automatically subscribes to router navigation events.

@@ -45,7 +45,7 @@ describe('IsLoadingDirective', () => {
     fixture.detectChanges();
   }
 
-  beforeEach(async(async () => {
+  beforeEach(async () => {
     const testingModule = TestBed.configureTestingModule({
       imports: [IsLoadingDirectiveModule],
       declarations: [TestComponent],
@@ -57,7 +57,7 @@ describe('IsLoadingDirective', () => {
     fixture = TestBed.createComponent(TestComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();
