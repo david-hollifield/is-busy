@@ -231,9 +231,8 @@ export class IsLoadingService {
     let sub: Subscription | Promise<unknown> | undefined;
 
     if (first instanceof Subscription) {
-      if (first.closed) {
-        return;
-      }
+      if (first.closed) return first;
+
       sub = first;
 
       first.add(() => this.remove(first, second));
@@ -247,6 +246,8 @@ export class IsLoadingService {
       );
     } else if (first instanceof Observable) {
       sub = first.pipe(take(1)).subscribe();
+
+      if (sub.closed) return first;
 
       sub.add(() => this.remove(sub as Subscription, second));
     } else if (first) {
