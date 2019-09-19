@@ -1,5 +1,10 @@
 # Changelog
 
+### 3.0.2 / 2019-9-19
+
+- [FIX] if a syncronous observable passed to `IsLoadingService#add()` generates a closed subscription, do not add a loading indicator.
+- [FIX] if a closed subscription is passed to `IsLoadingService#add()`, return the subscription to the caller.
+
 ### 3.0.1 / 2019-7-25
 
 - [FIX] ensure `IsLoadingPipe` and `IsLoadingDirective` use the root instance of `IsLoadingService`.

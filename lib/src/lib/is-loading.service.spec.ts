@@ -1,8 +1,8 @@
 import { TestBed, inject, async } from '@angular/core/testing';
 
 import { IsLoadingService } from './is-loading.service';
+import { BehaviorSubject, Subject, of } from 'rxjs';
 import { take } from 'rxjs/operators';
-import { BehaviorSubject, Subject } from 'rxjs';
 
 describe('IsLoadingService', () => {
   beforeEach(() => {
@@ -158,29 +158,19 @@ describe('IsLoadingService', () => {
         }),
       ));
 
-      // it('#isLoading$ observable', async(inject([IsLoadingService], async (service: IsLoadingService) => {
-      //   let count=0
+      // test for https://gitlab.com/service-work/is-loading/issues/3
+      it('add syncronous observable', async(
+        inject([IsLoadingService], async (service: IsLoadingService) => {
+          service.add(of([]));
 
-      //   service.isLoading$().subscribe(value => {
-      //     count++
-
-      //     if (count % 2 === 0) {
-      //       expect(value).toBeFalsy()
-      //     }
-      //     else {
-      //       expect(value).toBeTruthy()
-      //     }
-      //   })
-
-      //   service.add()
-      //   service.add()
-      //   service.add()
-      //   service.remove()
-      //   service.remove()
-      //   service.remove()
-
-      //   expect(count).toBe(2)
-      // })));
+          expect(
+            await service
+              .isLoading$()
+              .pipe(take(1))
+              .toPromise(),
+          ).toBe(false);
+        }),
+      ));
     });
 
     describe('class key', () => {
@@ -615,6 +605,16 @@ describe('IsLoadingService', () => {
 
           expect(service.isLoading()).toBeFalsy();
         }),
+      ));
+
+      // test for https://gitlab.com/service-work/is-loading/issues/3
+      it('add syncronous observable', inject(
+        [IsLoadingService],
+        (service: IsLoadingService) => {
+          service.add(of([]));
+
+          expect(service.isLoading()).toBe(false);
+        },
       ));
     });
 
