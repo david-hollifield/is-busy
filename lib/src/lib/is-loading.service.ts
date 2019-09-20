@@ -95,17 +95,7 @@ export class IsLoadingService {
           debounceTime(10),
           distinctUntilChanged(),
         )
-        .subscribe({
-          next(value) {
-            observer.next(value);
-          },
-          error(err) {
-            observer.error(err);
-          },
-          complete() {
-            observer.complete();
-          },
-        });
+        .subscribe(observer);
 
       // the return value is the teardown function,
       // which will be invoked when the new

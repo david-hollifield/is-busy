@@ -1,5 +1,9 @@
 # Changelog
 
+### Unreleased
+
+- [REFACTOR] small simplification of `IsLoadingService#isLoading$()`
+
 ### 3.0.2 / 2019-9-19
 
 - [FIX] if a syncronous observable passed to `IsLoadingService#add()` generates a closed subscription, do not add a loading indicator.
