@@ -19,18 +19,18 @@ import { IsLoadingDirective } from './is-loading.directive';
   `,
 })
 class TestComponent {
-  @ViewChild('one', { read: ElementRef }) one: ElementRef<HTMLDivElement>;
-  @ViewChild('one', { read: IsLoadingDirective }) dirOne: IsLoadingDirective;
+  @ViewChild('one', { read: ElementRef, static: true }) one: ElementRef<HTMLDivElement>;
+  @ViewChild('one', { read: IsLoadingDirective, static: true }) dirOne: IsLoadingDirective;
 
-  @ViewChild('two', { read: ElementRef }) two: ElementRef<HTMLButtonElement>;
-  @ViewChild('two', { read: IsLoadingDirective }) dirTwo: IsLoadingDirective;
+  @ViewChild('two', { read: ElementRef, static: true }) two: ElementRef<HTMLButtonElement>;
+  @ViewChild('two', { read: IsLoadingDirective, static: true }) dirTwo: IsLoadingDirective;
 
-  @ViewChild('three', { read: ElementRef }) three: ElementRef<HTMLDivElement>;
-  @ViewChild('three', { read: IsLoadingDirective })
+  @ViewChild('three', { read: ElementRef, static: true }) three: ElementRef<HTMLDivElement>;
+  @ViewChild('three', { read: IsLoadingDirective, static: true })
   dirThree: IsLoadingDirective;
 
-  @ViewChild('four', { read: ElementRef }) four: ElementRef<HTMLButtonElement>;
-  @ViewChild('four', { read: IsLoadingDirective })
+  @ViewChild('four', { read: ElementRef, static: true }) four: ElementRef<HTMLButtonElement>;
+  @ViewChild('four', { read: IsLoadingDirective, static: true })
   dirFour: IsLoadingDirective;
 }
 
