@@ -2,6 +2,8 @@
 
 ### Unreleased
 
+- none
+
 ### 3.0.3 / 2020-1-26
 
 - [REFACTOR] small simplification of `IsLoadingService#isLoading$()`
