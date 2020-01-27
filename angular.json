@@ -18,9 +18,9 @@
           },
           "configurations": {
             "production": {
-              "project": "lib/ng-package.prod.json"
-            ,              "tsConfig": "lib/tsconfig.lib.prod.json"
-}
+              "project": "lib/ng-package.prod.json",
+              "tsConfig": "lib/tsconfig.lib.prod.json"
+            }
           }
         },
         "test": {
