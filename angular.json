@@ -19,7 +19,8 @@
           "configurations": {
             "production": {
               "project": "lib/ng-package.prod.json"
-            }
+            ,              "tsConfig": "lib/tsconfig.lib.prod.json"
+}
           }
         },
         "test": {
