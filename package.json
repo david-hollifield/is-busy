@@ -1,6 +1,6 @@
 {
   "name": "@service-work/is-loading",
-  "version": "3.0.2",
+  "version": "4.0.0",
   "description": "A simple and flexible loading indicator service for Angular apps.",
   "author": "John Carroll <john.carroll.p@gmail.com>",
   "homepage": "https://gitlab.com/service-work/is-loading",
@@ -22,7 +22,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "yarn ts-node --project=tasks/tsconfig.tasks.json tasks/build.ts && ng build",
-    "test": "ng test",
+    "test": "ng test --watch=false",
     "lint": "ng lint",
     "e2e": "ng e2e",
     "pub": "yarn test --watch=false && yarn ts-node tasks/build.ts && yarn build && yarn publish dist/is-loading"

@@ -19,7 +19,7 @@ test:
     - apt-get install -y nodejs
     - yarn install
   script:
-    - yarn test --watch=false --code-coverage=false
+    - yarn ng test --watch=false --code-coverage=false
 
 dependency_scanning:
   image: docker:stable

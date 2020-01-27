@@ -12,6 +12,7 @@
     "types": []
   },
   "angularCompilerOptions": {
+    "enableIvy": false, // remove in Angular v10
     "skipTemplateCodegen": true,
     "strictMetadataEmit": true,
     "fullTemplateTypeCheck": true,
