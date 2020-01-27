@@ -2,6 +2,8 @@
 
 ### Unreleased
 
+### 3.0.3 / 2020-1-26
+
 - [REFACTOR] small simplification of `IsLoadingService#isLoading$()`
 
 ### 3.0.2 / 2019-9-19
@@ -20,7 +22,7 @@
   - To achieve the same functionality as before, subscribe to router events in your app-root.
   - ```ts
     @Component({
-      selector: 'app-root',
+      selector: "app-root",
       template: `
         <mat-progress-bar
           *ngIf="isLoading | async"
@@ -31,7 +33,7 @@
         </mat-progress-bar>
 
         <router-outlet></router-outlet>
-      `,
+      `
     })
     export class AppComponent {
       // Note, because `IsLoadingService#isLoading$()` returns
@@ -42,7 +44,7 @@
 
       constructor(
         private isLoadingService: IsLoadingService,
-        private router: Router,
+        private router: Router
       ) {}
 
       ngOnInit() {
@@ -55,8 +57,8 @@
                 event instanceof NavigationStart ||
                 event instanceof NavigationEnd ||
                 event instanceof NavigationCancel ||
-                event instanceof NavigationError,
-            ),
+                event instanceof NavigationError
+            )
           )
           .subscribe(event => {
             // if it's the start of navigation, `add()` a loading indicator

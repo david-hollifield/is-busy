@@ -25,7 +25,7 @@
     "test": "ng test --watch=false",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "pub": "yarn test --watch=false && yarn version && yarn build && yarn publish dist/is-loading"
+    "pub": "yarn test --watch=false && yarn version && yarn build && yarn publish dist/is-loading --non-interactive"
   },
   "peerDependencies": {
     "@angular/core": "^7.0.0 || ^8.0.0",
