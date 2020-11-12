@@ -25,7 +25,7 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "pub": "yarn test --watch=false && yarn version && yarn build && yarn publish dist/is-loading --non-interactive"
+    "pub": "yarn test && yarn version && yarn build --prod && yarn publish dist/is-loading --non-interactive"
   },
   "dependencies": {
     "tslib": "^2.0.0"
