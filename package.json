@@ -22,7 +22,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "yarn ts-node -P ./tasks/tsconfig.json ./tasks/build.ts && ng build",
-    "test": "ng test --watch=false",
+    "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
     "pub": "yarn test --watch=false && yarn version && yarn build && yarn publish dist/is-loading --non-interactive"
