@@ -1,6 +1,6 @@
 # Angular IsLoading
 
-[![NPM version](https://flat.badgen.net/npm/v/@service-work/is-loading)](https://www.npmjs.com/package/@service-work/is-loading) [![Size when minified & gzipped](https://flat.badgen.net/bundlephobia/minzip/@service-work/is-loading)](https://bundlephobia.com/result?p=@service-work/is-loading) [![Angular versions 7 and 8 supported](https://flat.badgen.net/badge/Angular/v7%20%7C%7C%20v8/cyan)](https://angular.io/)
+[![NPM version](https://flat.badgen.net/npm/v/@service-work/is-loading)](https://www.npmjs.com/package/@service-work/is-loading) [![Size when minified & gzipped](https://flat.badgen.net/bundlephobia/minzip/@service-work/is-loading)](https://bundlephobia.com/result?p=@service-work/is-loading) [![Angular versions 7+ are supported - see compatibility below](https://flat.badgen.net/badge/Angular/v7%20%7C%7C%20v8%20%7C%7C%20v9%20%7C%7C%20v10/cyan)](https://angular.io/)
 
 [IsLoadingService](#isloadingservice) is a simple angular service that makes it easy to track whether your app, or parts of it, are loading. The optional companion [IsLoadingModule](#isloadingmodule) contains an [IsLoadingPipe](#isloadingpipe) that makes it easy to subscribe to IsLoadingService inside a component's template, as well as an [IsLoadingDirective](#isloadingdirective) that makes it easy to add a loading indicator (and/or disable) HTML elements while loading is happening.
 
@@ -37,7 +37,7 @@ Example:
 
 ```typescript
 @Component({
-  selector: 'app-root',
+  selector: "app-root",
   template: `
     <mat-progress-bar
       *ngIf="isLoading | async"
@@ -55,7 +55,7 @@ export class AppComponent {
 
   constructor(
     private isLoadingService: IsLoadingService,
-    private router: Router,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -67,14 +67,14 @@ export class AppComponent {
     this.router.events
       .pipe(
         filter(
-          event =>
+          (event) =>
             event instanceof NavigationStart ||
             event instanceof NavigationEnd ||
             event instanceof NavigationCancel ||
-            event instanceof NavigationError,
-        ),
+            event instanceof NavigationError
+        )
       )
-      .subscribe(event => {
+      .subscribe((event) => {
         // If it's the start of navigation, `add()` a loading indicator
         if (event instanceof NavigationStart) {
           this.isLoadingService.add();
@@ -110,7 +110,7 @@ Example:
 class MyCustomComponent implements OnInit, AfterViewInit {
   constructor(
     private loadingService: IsLoadingService,
-    private myCustomDataService: MyCustomDataService,
+    private myCustomDataService: MyCustomDataService
   ) {}
 
   ngOnInit() {
@@ -121,7 +121,7 @@ class MyCustomComponent implements OnInit, AfterViewInit {
     // Note, we don't need to call remove() when calling
     // add() with a subscription
     this.loadingService.add(subscription, {
-      key: 'getting-data',
+      key: "getting-data",
     });
   }
 
@@ -130,7 +130,7 @@ class MyCustomComponent implements OnInit, AfterViewInit {
   }
 
   isDataLoading(): boolean {
-    return this.loadingService.isLoading({ key: 'getting-data' });
+    return this.loadingService.isLoading({ key: "getting-data" });
   }
 }
 ```
@@ -147,14 +147,14 @@ class IsLoadingService {
   add(options: IUpdateLoadingOptions): void;
   add<T extends Subscription | Promise<unknown> | Observable<unknown>>(
     sub: T,
-    options?: IUpdateLoadingOptions,
+    options?: IUpdateLoadingOptions
   ): T;
 
   remove(): void;
   remove(options: IUpdateLoadingOptions): void;
   remove(
     sub: Subscription | Promise<unknown>,
-    options?: IUpdateLoadingOptions,
+    options?: IUpdateLoadingOptions
   ): void;
 }
 
@@ -187,7 +187,7 @@ Example:
 
 ```ts
 @Component({
-  selector: 'app-root',
+  selector: "app-root",
   template: `
     <mat-progress-bar
       *ngIf="'default' | swIsLoading | async"
@@ -213,11 +213,9 @@ For example, take the following `example-component`:
 
 ```ts
 @Component({
-  selector: 'example-component',
+  selector: "example-component",
   template: `
-    <button swIsLoading="button" (click)="submit()">
-      Submit Form
-    </button>
+    <button swIsLoading="button" (click)="submit()">Submit Form</button>
   `,
 })
 export class MyComponent {}
@@ -252,13 +250,13 @@ Example:
 import {
   SW_IS_LOADING_DIRECTIVE_CONFIG,
   ISWIsLoadingDirectiveConfig,
-} from '@service-work/is-loading';
+} from "@service-work/is-loading";
 
 const myConfig: ISWIsLoadingDirectiveConfig = {
   // disable element while loading (default: true)
   disableEl: true,
   // the class used to indicate loading (default: "sw-is-loading")
-  loadingClass: 'sw-is-loading',
+  loadingClass: "sw-is-loading",
   // should a spinner element be added to the dom
   // (default: varies --> true for button/anchor elements, false otherwise)
   addSpinnerEl: undefined,
@@ -269,6 +267,11 @@ const myConfig: ISWIsLoadingDirectiveConfig = {
 })
 export class MyModule {}
 ```
+
+## Compatibility
+
+- Version 3 of this library is compatible with Angular v7+.
+- Version 4 of this library is compatible with Angular v8+.
 
 ## About
 

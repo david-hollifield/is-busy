@@ -457,6 +457,81 @@ describe("IsLoadingService", () => {
         }
       ));
     });
+
+    describe("unique", () => {
+      it("#add & #remove", inject(
+        [IsLoadingService],
+        async (service: IsLoadingService) => {
+          let value = false;
+
+          service.add({ unique: IsLoadingService });
+
+          value = await service.isLoading$().pipe(take(1)).toPromise();
+
+          expect(value).toBeTruthy();
+
+          value = await service
+            .isLoading$({ key: "button" })
+            .pipe(take(1))
+            .toPromise();
+
+          expect(value).toBeFalsy();
+
+          service.add({ key: IsLoadingService, unique: IsLoadingService });
+
+          value = await service
+            .isLoading$({ key: IsLoadingService })
+            .pipe(take(1))
+            .toPromise();
+
+          expect(value).toBeTruthy();
+
+          value = await service.isLoading$().pipe(take(1)).toPromise();
+
+          expect(value).toBeTruthy();
+
+          service.add({ unique: IsLoadingService });
+
+          value = await service.isLoading$().pipe(take(1)).toPromise();
+
+          expect(value).toBeTruthy();
+
+          service.remove();
+
+          value = await service.isLoading$().pipe(take(1)).toPromise();
+
+          expect(value).toBeFalsy();
+
+          service.remove({ key: IsLoadingService });
+
+          value = await service
+            .isLoading$({ key: IsLoadingService })
+            .pipe(take(1))
+            .toPromise();
+
+          expect(value).toBeFalsy();
+
+          service.add({ key: IsLoadingService, unique: IsLoadingService });
+          service.add({ key: IsLoadingService, unique: IsLoadingService });
+
+          value = await service
+            .isLoading$({ key: IsLoadingService })
+            .pipe(take(1))
+            .toPromise();
+
+          expect(value).toBeTruthy();
+
+          service.remove({ key: IsLoadingService });
+
+          value = await service
+            .isLoading$({ key: IsLoadingService })
+            .pipe(take(1))
+            .toPromise();
+
+          expect(value).toBeFalsy();
+        }
+      ));
+    });
   });
 
   describe("with isLoading", () => {

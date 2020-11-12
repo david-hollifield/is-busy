@@ -2,7 +2,8 @@
 
 ### Unreleased
 
-- none
+- [BREAKING] The `IUpdateLoadingOptions` interface was removed and split into `IAddLoadingOptions` and `IRemoveLoadingOptions`.
+- [FEATURE] `IAddLoadingOptions#unique` A new option was added to `IsLoadingService#add()`, "unique". The unique option allows you to call `IsLoadingService#add()` multiple times in a row while only adding a single loading indicator to the stack (i.e. if an active loading indicator with the same "unique" key already exists on the stack, the new loading indicator will replace it rather than be added alongside it). This can be useful in observable chain. For example, while someone is typing you might want to add a single loading indicator to the stack that can be removed later. Whenever they start typing you can call `IsLoadingService#add()` with the same unique key and know that, at most, only a single loading indicator will be added to the stack.
 
 ### 3.0.3 / 2020-1-26
 
@@ -35,7 +36,7 @@
         </mat-progress-bar>
 
         <router-outlet></router-outlet>
-      `
+      `,
     })
     export class AppComponent {
       // Note, because `IsLoadingService#isLoading$()` returns
@@ -55,14 +56,14 @@
         this.router.events
           .pipe(
             filter(
-              event =>
+              (event) =>
                 event instanceof NavigationStart ||
                 event instanceof NavigationEnd ||
                 event instanceof NavigationCancel ||
                 event instanceof NavigationError
             )
           )
-          .subscribe(event => {
+          .subscribe((event) => {
             // if it's the start of navigation, `add()` a loading indicator
             if (event instanceof NavigationStart) {
               this.isLoadingService.add();
