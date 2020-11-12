@@ -1,30 +1,68 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Subscription, Observable } from 'rxjs';
-import { distinctUntilChanged, debounceTime, take } from 'rxjs/operators';
+import { Injectable } from "@angular/core";
+import { BehaviorSubject, Subscription, Observable } from "rxjs";
+import { distinctUntilChanged, debounceTime, take } from "rxjs/operators";
 
 export type Key = string | object | symbol;
 
 export interface IGetLoadingOptions {
+  /** Which loading "thing" do you want to track? */
   key?: Key;
 }
 
-export interface IUpdateLoadingOptions {
+export interface IAddLoadingOptions {
+  /** Used to track the loading of different things */
+  key?: Key | Key[];
+  /**
+   * The first time you call IsLoadingService#add() with
+   * the "unique" option, it's the same as without it.
+   * The second time you call add() with the "unique" option,
+   * the IsLoadingService will see if
+   * an active loading indicator with the same "unique" ID
+   * already exists.
+   * If it does, it will remove that indicator and replace
+   * it with this one (ensuring that calling add() with a
+   * unique key multiple times in a row only adds a single
+   * loading indicator to the stack). Example:
+   *
+   * ```ts
+   * this.isLoadingService.isLoading(); // false
+   * this.isLoadingService.add({ unique: 'test' });
+   * this.isLoadingService.add({ unique: 'test' });
+   * this.isLoadingService.isLoading(); // true
+   * this.isLoadingService.remove();
+   * this.isLoadingService.isLoading(); // false
+   * ```
+   */
+  unique?: Key;
+}
+
+export interface IRemoveLoadingOptions {
   key?: Key | Key[];
 }
 
+class LoadingToken<T> {
+  constructor(private value: T, private unique?: Key) {}
+
+  isSame(a: unknown, unique?: Key): boolean {
+    if (a === this.value) return true;
+    if (this.unique && unique && this.unique === unique) return true;
+    return false;
+  }
+}
+
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root",
 })
 export class IsLoadingService {
-  protected defaultKey = 'default';
+  protected defaultKey = "default";
 
   // provides an observable indicating if a particular key is loading
   private loadingSubjects = new Map<Key, BehaviorSubject<boolean>>();
 
   // tracks how many "things" are loading for each key
   private loadingStacks = new Map<
-    unknown,
-    (true | Subscription | Promise<unknown>)[]
+    Key,
+    LoadingToken<true | Subscription | Promise<unknown>>[]
   >();
 
   // tracks which keys are being watched so that unused keys
@@ -83,18 +121,14 @@ export class IsLoadingService {
   isLoading$(args: IGetLoadingOptions = {}): Observable<boolean> {
     const keys = this.normalizeKeys(args.key);
 
-    return new Observable<boolean>(observer => {
+    return new Observable<boolean>((observer) => {
       // this function will called each time this
       // Observable is subscribed to.
       this.indexKeys(keys);
 
       const subscription = this.loadingSubjects
         .get(keys[0])!
-        .pipe(
-          distinctUntilChanged(),
-          debounceTime(10),
-          distinctUntilChanged(),
-        )
+        .pipe(distinctUntilChanged(), debounceTime(10), distinctUntilChanged())
         .subscribe(observer);
 
       // the return value is the teardown function,
@@ -102,7 +136,7 @@ export class IsLoadingService {
       // Observable is unsubscribed from.
       return () => {
         subscription.unsubscribe();
-        keys.forEach(key => this.deIndexKey(key));
+        keys.forEach((key) => this.deIndexKey(key));
       };
     });
   }
@@ -208,57 +242,65 @@ export class IsLoadingService {
    *         This allows code like `await this.isLoadingService.add(promise)`.
    */
   add(): void;
-  add(options: IUpdateLoadingOptions): void;
+  add(options: IAddLoadingOptions): void;
   add<T extends Subscription | Promise<unknown> | Observable<unknown>>(
     sub: T,
-    options?: IUpdateLoadingOptions,
+    options?: IAddLoadingOptions
   ): T;
   add(
-    first?: Subscription | Promise<unknown> | IUpdateLoadingOptions,
-    second?: IUpdateLoadingOptions,
+    a?: Subscription | Promise<unknown> | IAddLoadingOptions,
+    b?: IAddLoadingOptions
   ) {
-    let keyParam: Key | Key[] | undefined;
+    let options = b;
     let sub: Subscription | Promise<unknown> | undefined;
+    const teardown = () => this.remove(sub!, options);
 
-    if (first instanceof Subscription) {
-      if (first.closed) return first;
+    if (a instanceof Subscription) {
+      sub = a;
 
-      sub = first;
+      if (sub.closed) return a;
 
-      first.add(() => this.remove(first, second));
-    } else if (first instanceof Promise) {
-      sub = first;
+      sub.add(teardown);
+    } else if (a instanceof Promise) {
+      sub = a;
 
       // If the promise is already resolved, this executes syncronously
-      first.then(
-        () => this.remove(first, second),
-        () => this.remove(first, second),
-      );
-    } else if (first instanceof Observable) {
-      sub = first.pipe(take(1)).subscribe();
+      sub.then(teardown, teardown);
+    } else if (a instanceof Observable) {
+      sub = a.pipe(take(1)).subscribe();
 
-      if (sub.closed) return first;
+      if (sub.closed) return a;
 
-      sub.add(() => this.remove(sub as Subscription, second));
-    } else if (first) {
-      keyParam = first.key;
+      sub.add(teardown);
+    } else if (a) {
+      options = a;
     }
 
-    if (second && second.key) {
-      keyParam = second.key;
-    }
-
-    const keys = this.normalizeKeys(keyParam);
+    const keys = this.normalizeKeys(options?.key);
 
     this.indexKeys(keys);
 
-    keys.forEach(key => {
-      this.loadingStacks.get(key)!.push(sub || true);
+    for (const key of keys) {
+      const loadingStack = this.loadingStacks.get(key)!;
+
+      // if the "unique" option is present, remove any existing
+      // loading idicators with the same "unique" value
+      if (options?.unique) {
+        const index = loadingStack.findIndex((t) =>
+          t.isSame(sub || true, options?.unique)
+        );
+
+        if (index >= 0) {
+          loadingStack.splice(index, 1);
+        }
+      }
+
+      loadingStack.push(new LoadingToken(sub || true, options?.unique));
 
       this.updateLoadingStatus(key);
-    });
+    }
 
-    return first instanceof Observable ? first : sub;
+    return a instanceof Observable ? a : sub;
   }
 
   /**
@@ -316,39 +358,35 @@ export class IsLoadingService {
    *
    */
   remove(): void;
-  remove(options: IUpdateLoadingOptions): void;
+  remove(options: IRemoveLoadingOptions): void;
   remove(
     sub: Subscription | Promise<unknown>,
-    options?: IUpdateLoadingOptions,
+    options?: IRemoveLoadingOptions
   ): void;
   remove(
-    first?: Subscription | Promise<unknown> | IUpdateLoadingOptions,
-    second?: IUpdateLoadingOptions,
+    a?: Subscription | Promise<unknown> | IRemoveLoadingOptions,
+    b?: IRemoveLoadingOptions
   ) {
-    let keyParam: Key | Key[] | undefined;
+    let options = b;
     let sub: Subscription | Promise<unknown> | undefined;
 
-    if (first instanceof Subscription) {
-      sub = first;
-    } else if (first instanceof Promise) {
-      sub = first;
-    } else if (first) {
-      keyParam = first.key;
+    if (a instanceof Subscription) {
+      sub = a;
+    } else if (a instanceof Promise) {
+      sub = a;
+    } else if (a) {
+      options = a;
     }
 
-    if (second && second.key) {
-      keyParam = second.key;
-    }
+    const keys = this.normalizeKeys(options?.key);
 
-    const keys = this.normalizeKeys(keyParam);
-
-    keys.forEach(key => {
+    for (const key of keys) {
       const loadingStack = this.loadingStacks.get(key);
 
       // !loadingStack means that a user has called remove() needlessly
       if (!loadingStack) return;
 
-      const index = loadingStack.indexOf(sub || true);
+      const index = loadingStack.findIndex((t) => t.isSame(sub || true));
 
       if (index >= 0) {
         loadingStack.splice(index, 1);
@@ -357,7 +395,7 @@ export class IsLoadingService {
 
         this.deIndexKey(key);
       }
-    });
+    }
   }
 
   private normalizeKeys(key?: Key | Key[]): Key[] {
@@ -389,7 +427,7 @@ export class IsLoadingService {
    */
 
   private indexKeys(keys: Key[]) {
-    keys.forEach(key => {
+    for (const key of keys) {
       if (this.loadingKeyIndex.has(key)) {
         const curr = this.loadingKeyIndex.get(key)!;
         this.loadingKeyIndex.set(key, curr + 1);
@@ -400,7 +438,7 @@ export class IsLoadingService {
         this.loadingSubjects.set(key, subject);
         this.loadingStacks.set(key, []);
       }
-    });
+    }
   }
 
   private deIndexKey(key: Key) {
