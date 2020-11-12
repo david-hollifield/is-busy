@@ -20,8 +20,7 @@
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   // - 4200 needed for serving the angular app
-  // - 9876 needed for headless chrome karma testing
-  "forwardPorts": [4200, 9876],
+  "forwardPorts": [4200],
 
   // Use 'postCreateCommand' to run commands after the container is created.
   "postCreateCommand": "yes | npm install @angular/cli -g"
