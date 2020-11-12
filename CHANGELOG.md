@@ -2,6 +2,10 @@
 
 ### Unreleased
 
+- none
+
+### 4.0.0 / 2020-11-11
+
 - [BREAKING] The `IUpdateLoadingOptions` interface was removed and split into `IAddLoadingOptions` and `IRemoveLoadingOptions`.
 - [FEATURE] `IAddLoadingOptions#unique` A new option was added to `IsLoadingService#add()`, "unique". The unique option allows you to call `IsLoadingService#add()` multiple times in a row while only adding a single loading indicator to the stack (i.e. if an active loading indicator with the same "unique" key already exists on the stack, the new loading indicator will replace it rather than be added alongside it). This can be useful in observable chain. For example, while someone is typing you might want to add a single loading indicator to the stack that can be removed later. Whenever they start typing you can call `IsLoadingService#add()` with the same unique key and know that, at most, only a single loading indicator will be added to the stack.
 
