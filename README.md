@@ -4,7 +4,7 @@
 
 [IsLoadingService](#isloadingservice) is a simple angular service that makes it easy to track whether your app, or parts of it, are loading. The optional companion [IsLoadingModule](#isloadingmodule) contains an [IsLoadingPipe](#isloadingpipe) that makes it easy to subscribe to IsLoadingService inside a component's template, as well as an [IsLoadingDirective](#isloadingdirective) that makes it easy to add a loading indicator (and/or disable) HTML elements while loading is happening.
 
-#### [See simple demo](http://bit.ly/32JQOW1)
+#### [See simple demo](https://codesandbox.io/s/isloadingservice-example-ujlgm?file=/src/app/app.component.ts)
 
 You can install it with
 
@@ -234,7 +234,7 @@ Some examples:
 - https://tobiasahlin.com/spinkit/
 - https://projects.lukehaas.me/css-loaders/
 
-You can also borrow the spinner styling from the [demo app](http://bit.ly/32JQOW1).
+You can also borrow the spinner styling from the [demo app](https://codesandbox.io/s/isloadingservice-example-ujlgm?file=/src/app/app.component.ts).
 
 #### Directive Customization
 
