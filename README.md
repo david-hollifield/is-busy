@@ -1,6 +1,6 @@
 # Angular IsLoading
 
-[![NPM version](https://flat.badgen.net/npm/v/@service-work/is-loading)](https://www.npmjs.com/package/@service-work/is-loading) [![Size when minified & gzipped](https://flat.badgen.net/bundlephobia/minzip/@service-work/is-loading)](https://bundlephobia.com/result?p=@service-work/is-loading) [![Angular versions 7+ are supported - see compatibility below](https://flat.badgen.net/badge/Angular/v7%20%7C%7C%20v8%20%7C%7C%20v9%20%7C%7C%20v10/cyan)](https://angular.io/)
+[![NPM version](https://flat.badgen.net/npm/v/@service-work/is-loading)](https://www.npmjs.com/package/@service-work/is-loading) [![Size when minified & gzipped](https://flat.badgen.net/bundlephobia/minzip/@service-work/is-loading)](https://bundlephobia.com/result?p=@service-work/is-loading) [![Angular versions 8+ are supported - see compatibility below](https://flat.badgen.net/badge/Angular/v8%2B/cyan)](https://angular.io/)
 
 [IsLoadingService](#isloadingservice) is a simple angular service that makes it easy to track whether your app, or parts of it, are loading. The optional companion [IsLoadingModule](#isloadingmodule) contains an [IsLoadingPipe](#isloadingpipe) that makes it easy to subscribe to IsLoadingService inside a component's template, as well as an [IsLoadingDirective](#isloadingdirective) that makes it easy to add a loading indicator (and/or disable) HTML elements while loading is happening.
 
@@ -137,24 +137,24 @@ class MyCustomComponent implements OnInit, AfterViewInit {
 
 ### Interface
 
-```typescript
+````typescript
 class IsLoadingService {
   isLoading$(options?: IGetLoadingOptions): Observable<boolean>;
 
   isLoading(options?: IGetLoadingOptions): boolean;
 
   add(): void;
-  add(options: IUpdateLoadingOptions): void;
+  add(options: IAddLoadingOptions): void;
   add<T extends Subscription | Promise<unknown> | Observable<unknown>>(
     sub: T,
-    options?: IUpdateLoadingOptions
+    options?: IAddLoadingOptions
   ): T;
 
   remove(): void;
-  remove(options: IUpdateLoadingOptions): void;
+  remove(options: IRemoveLoadingOptions): void;
   remove(
     sub: Subscription | Promise<unknown>,
-    options?: IUpdateLoadingOptions
+    options?: IRemoveLoadingOptions
   ): void;
 }
 
@@ -164,10 +164,37 @@ interface IGetLoadingOptions {
   key?: Key;
 }
 
-interface IUpdateLoadingOptions {
+interface IAddLoadingOptions {
+  /** Used to track the loading of different things */
+  key?: Key | Key[];
+  /**
+   * The first time you call IsLoadingService#add() with
+   * the "unique" option, it's the same as without it.
+   * The second time you call add() with the "unique" option,
+   * the IsLoadingService will see if
+   * an active loading indicator with the same "unique" ID
+   * already exists.
+   * If it does, it will remove that indicator and replace
+   * it with this one (ensuring that calling add() with a
+   * unique key multiple times in a row only adds a single
+   * loading indicator to the stack). Example:
+   *
+   * ```ts
+   * this.isLoadingService.isLoading(); // false
+   * this.isLoadingService.add({ unique: 'test' });
+   * this.isLoadingService.add({ unique: 'test' });
+   * this.isLoadingService.isLoading(); // true
+   * this.isLoadingService.remove();
+   * this.isLoadingService.isLoading(); // false
+   * ```
+   */
+  unique?: Key;
+}
+
+interface IRemoveLoadingOptions {
   key?: Key | Key[];
 }
-```
+````
 
 ## IsLoadingModule
 
