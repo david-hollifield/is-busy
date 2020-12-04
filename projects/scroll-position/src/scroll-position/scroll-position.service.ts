@@ -10,7 +10,7 @@ const baseConfig: Required<IScrollPositionServiceConfig> = {
 };
 
 @Injectable({ providedIn: "root" })
-class ScrollPositionStore extends Map<string, number> {}
+export class ScrollPositionStore extends Map<string, number> {}
 
 @Injectable()
 export class ScrollPositionService {
