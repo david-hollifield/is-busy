@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
-  "defaultProject": "scroll-position",
+  "defaultProject": "is-loading",
   "newProjectRoot": "projects",
   "projects": {
     "is-loading": {
@@ -36,9 +36,7 @@
               "projects/is-loading/tsconfig.lib.json",
               "projects/is-loading/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -74,9 +72,7 @@
               "projects/scroll-position/tsconfig.lib.json",
               "projects/scroll-position/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
