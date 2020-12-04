@@ -1,12 +1,12 @@
 import { Injectable } from "@angular/core";
-import { BehaviorSubject, Subscription, Observable } from "rxjs";
-import { distinctUntilChanged, debounceTime, take } from "rxjs/operators";
+import { BehaviorSubject, Subscription, Observable, combineLatest } from "rxjs";
+import { distinctUntilChanged, debounceTime, take, map } from "rxjs/operators";
 
 export type Key = string | object | symbol;
 
 export interface IGetLoadingOptions {
   /** Which loading "thing" do you want to track? */
-  key?: Key;
+  key?: Key | Key[];
 }
 
 export interface IAddLoadingOptions {
@@ -65,8 +65,8 @@ export class IsLoadingService {
     LoadingToken<true | Subscription | Promise<unknown>>[]
   >();
 
-  // tracks which keys are being watched so that unused keys
-  // can be deleted/garbage collected.
+  // tracks the sum of the loading indicators and subscribers for each
+  // key so that unneeded keys can be deleted/garbage collected.
   private loadingKeyIndex = new Map<Key, number>();
 
   constructor() {}
@@ -77,7 +77,9 @@ export class IsLoadingService {
    * When called without arguments, returns the default *isLoading*
    * observable for your app. When called with an options object
    * containing a `key` property, returns the *isLoading* observable
-   * corresponding to that key.
+   * corresponding to that key. When called with an array of keys,
+   * returns an observable that emits true while any key is loading
+   * and false otherwise.
    *
    * Internally, *isLoading* observables are `BehaviorSubject`s, so
    * they will return values immediately upon subscription.
@@ -119,6 +121,18 @@ export class IsLoadingService {
    * @param args.key optionally specify the key to subscribe to
    */
   isLoading$(args: IGetLoadingOptions = {}): Observable<boolean> {
+    if (Array.isArray(args.key)) {
+      if (args.key.length === 0) {
+        throw new Error(
+          `Must provide at least one key when passing an array of keys`
+        );
+      }
+
+      return combineLatest(
+        args.key.map((key) => this.isLoading$({ key }))
+      ).pipe(map((values) => values.some((v) => v)));
+    }
+
     const keys = this.normalizeKeys(args.key);
 
     return new Observable<boolean>((observer) => {
@@ -384,7 +398,7 @@ export class IsLoadingService {
       const loadingStack = this.loadingStacks.get(key);
 
       // !loadingStack means that a user has called remove() needlessly
-      if (!loadingStack) return;
+      if (!loadingStack) continue;
 
       const index = loadingStack.findIndex((t) => t.isSame(sub || true));
 
@@ -409,18 +423,23 @@ export class IsLoadingService {
    * keys are being watched so that unused keys can be deleted
    * / garbage collected.
    *
-   * When `indexKeys()` is called with an array of keys, it means
-   * that each of those keys has at least one "thing" interested
-   * in it. Therefore, we need to make sure that a loadingSubject
-   * and loadingStack exists for that key. We also need to index
-   * the number of "things" interested in that key in the
-   * `loadingKeyIndex` map.
+   * `indexKeys` is called both when there's a new subscriber to
+   * a key as well as when a loading indicator is added for a key.
+   * A key is only deIndexed when all of the subscribers have
+   * unsubscribed *and* all of the loading indicators have been
+   * removed.
+   *
+   * When `indexKeys()` is called with an array of keys,
+   * we need to make sure that a loadingSubject
+   * and loadingStack exists for that key. We also need to increase
+   * the index for that key in the `loadingKeyIndex` map (which
+   * tracks the sum of the subscribers and loading indicators for
+   * that key).
    *
    * When `deIndexKeys()` is called with an array of keys, it
-   * means that some "thing" is no longer interested in each
-   * of those keys. Therefore, we need to re-index
-   * the number of "things" interested in each key. For keys
-   * that no longer have anything interested in them, we need
+   * means that either a subscriber has unsubscribed from a key or
+   * a loading stack counter has been removed for a key. For keys
+   * where the index reaches 0, we need
    * to delete the associated `loadingKeyIndex`, `loadingSubject`,
    * and `loadingStack`. So that the `key` can be properly
    * released for garbage collection.

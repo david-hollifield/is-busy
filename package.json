@@ -1,6 +1,7 @@
 {
-  "name": "@service-work/is-loading",
-  "version": "4.0.0",
+  "name": "monorepo",
+  "private": true,
+  "version": "0.0.1",
   "description": "A simple and flexible loading indicator service for Angular apps.",
   "author": "John Carroll <john.carroll.p@gmail.com>",
   "homepage": "https://gitlab.com/service-work/is-loading",
@@ -9,29 +10,20 @@
     "type": "git",
     "url": "https://gitlab.com/service-work/is-loading.git"
   },
+  "workspaces": {
+    "packages": [
+      "projects/*"
+    ]
+  },
   "license": "Unlicense",
-  "keywords": [
-    "angular",
-    "javascript",
-    "typescript",
-    "loading indicator",
-    "is loading",
-    "service"
-  ],
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "yarn ts-node -P ./tasks/tsconfig.json ./tasks/build.ts && ng build",
+    "build": "ng build",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
     "pub": "yarn test && yarn version && yarn build --prod && yarn publish dist/is-loading --non-interactive"
-  },
-  "dependencies": {
-    "tslib": "^2.0.0"
-  },
-  "peerDependencies": {
-    "rxjs": "^6.0.0"
   },
   "devDependencies": {
     "@angular-builders/jest": "^10.0.1",
@@ -42,6 +34,7 @@
     "@angular/compiler": "^10.2.3",
     "@angular/compiler-cli": "^10.2.3",
     "@angular/core": "^10.2.3",
+    "@angular/router": "^10.2.3",
     "@angular/language-service": "^10.2.3",
     "@angular/platform-browser": "^10.2.3",
     "@angular/platform-browser-dynamic": "^10.2.3",
@@ -53,6 +46,7 @@
     "rxjs": "^6.0.0",
     "ts-node": "^9.0.0",
     "tslint": "~6.1.0",
+    "tslib": "^2.0.0",
     "typescript": "~4.0.5",
     "zone.js": "~0.10.2"
   }

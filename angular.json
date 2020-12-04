@@ -5,34 +5,73 @@
   "newProjectRoot": "projects",
   "projects": {
     "is-loading": {
-      "root": "lib",
-      "sourceRoot": "lib/src",
+      "root": "projects/is-loading",
+      "sourceRoot": "projects/is-loading/src",
       "projectType": "library",
       "prefix": "sw",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
-            "tsConfig": "lib/tsconfig.lib.json",
-            "project": "lib/ng-package.json"
+            "tsConfig": "projects/is-loading/tsconfig.lib.json",
+            "project": "projects/is-loading/ng-package.json"
           },
           "configurations": {
             "production": {
-              "project": "lib/ng-package.prod.json",
-              "tsConfig": "lib/tsconfig.lib.prod.json"
+              "project": "projects/is-loading/ng-package.prod.json",
+              "tsConfig": "projects/is-loading/tsconfig.lib.prod.json"
             }
           }
         },
         "test": {
           "builder": "@angular-builders/jest:run",
           "options": {
-            "tsConfig": "lib/tsconfig.spec.json"
+            "tsConfig": "projects/is-loading/tsconfig.spec.json"
           }
         },
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "tsConfig": ["lib/tsconfig.lib.json", "lib/tsconfig.spec.json"],
+            "tsConfig": [
+              "projects/is-loading/tsconfig.lib.json",
+              "projects/is-loading/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
+          }
+        }
+      }
+    },
+    "scroll-position": {
+      "projectType": "library",
+      "root": "projects/scroll-position",
+      "sourceRoot": "projects/scroll-position/src",
+      "prefix": "sw",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "tsConfig": "projects/scroll-position/tsconfig.lib.json",
+            "project": "projects/scroll-position/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/scroll-position/tsconfig.lib.prod.json"
+            }
+          }
+        },
+        "test": {
+          "builder": "@angular-builders/jest:run",
+          "options": {
+            "tsConfig": "projects/scroll-position/tsconfig.spec.json"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "projects/scroll-position/tsconfig.lib.json",
+              "projects/scroll-position/tsconfig.spec.json"
+            ],
             "exclude": ["**/node_modules/**"]
           }
         }
