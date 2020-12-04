@@ -75,10 +75,10 @@ export class ScrollPositionDirective implements AfterViewInit, OnDestroy {
   }
 
   private save() {
-    this.service.save(this.key, this.el.nativeElement.scrollTop);
+    this.service.save(this.key, this.el);
   }
 
   private refresh() {
-    this.service.refresh(this.el, this.key);
+    this.service.refresh(this.key, this.el);
   }
 }

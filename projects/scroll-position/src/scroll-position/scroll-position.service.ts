@@ -30,11 +30,21 @@ export class ScrollPositionService {
     return this.store.get(this.getPositionKey(key)) || 0;
   }
 
-  save(key: string | string[], value: number) {
-    this.store.set(this.getPositionKey(key), value);
+  save(
+    key: string | string[],
+    value: ElementRef<HTMLElement> | HTMLElement | number
+  ) {
+    const _value =
+      value instanceof ElementRef
+        ? value.nativeElement.scrollTop
+        : typeof value === "number"
+        ? value
+        : value.scrollTop;
+
+    this.store.set(this.getPositionKey(key), _value);
   }
 
-  refresh(el: ElementRef<HTMLElement> | HTMLElement, key: string | string[]) {
+  refresh(key: string | string[], el: ElementRef<HTMLElement> | HTMLElement) {
     const _el = el instanceof ElementRef ? el.nativeElement : el;
 
     _el.scrollTop = this.get(key);
