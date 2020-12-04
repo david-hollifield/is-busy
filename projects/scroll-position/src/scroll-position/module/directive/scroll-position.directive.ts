@@ -5,9 +5,9 @@ import {
   OnDestroy,
   AfterViewInit,
 } from "@angular/core";
-import { NavigationStart, Router } from "@angular/router";
+import { ResolveEnd, Router } from "@angular/router";
 import { Subscription } from "rxjs";
-import { filter, take } from "rxjs/operators";
+import { delay, filter, take } from "rxjs/operators";
 import { IsLoadingService } from "@service-work/is-loading";
 import { ScrollPositionService } from "../../scroll-position.service";
 
@@ -42,6 +42,17 @@ export class ScrollPositionDirective implements AfterViewInit, OnDestroy {
     this._key = value;
   }
 
+  private delay = 0;
+  @Input() set swScrollPositionDelay(value: number | string) {
+    this.delay = typeof value === "number" ? value : parseInt(value, 10);
+
+    if (!Number.isInteger(this.delay) || this.delay < 0) {
+      throw new Error(`invalid swScrollPositionDelay: ${value}`);
+    }
+  }
+
+  @Input() swScrollPositionSaveMode: "OnNavigate" | "OnDestroy" = "OnNavigate";
+
   private subscriptions: Subscription[] = [];
 
   constructor(
@@ -57,20 +68,33 @@ export class ScrollPositionDirective implements AfterViewInit, OnDestroy {
         .isLoading$({ key: this.key })
         .pipe(
           filter((v) => !v),
-          take(1)
+          take(1),
+          // we need to wait a tick before refreshing to ensure that angular
+          // updates the dom before we refresh
+          delay(this.delay)
         )
         .subscribe(() => this.refresh())
     );
 
     this.subscriptions.push(
       this.router.events
-        .pipe(filter((event) => event instanceof NavigationStart))
+        // ResolveEnd comes right before the current view is destroyed
+        .pipe(
+          filter(
+            (event) =>
+              this.swScrollPositionSaveMode === "OnNavigate" &&
+              event instanceof ResolveEnd
+          )
+        )
         .subscribe(() => this.save())
     );
   }
 
   ngOnDestroy() {
-    this.save(); // in case a component is destroyed via, e.g., an ngIf
+    if (this.swScrollPositionSaveMode === "OnDestroy") {
+      this.save(); // in case a component is destroyed via, e.g., an ngIf
+    }
+
     this.subscriptions.forEach((sub) => sub.unsubscribe());
   }
 

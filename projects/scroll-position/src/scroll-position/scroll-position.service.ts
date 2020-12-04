@@ -41,7 +41,7 @@ export class ScrollPositionService {
         ? value
         : value.scrollTop;
 
-    this.store.set(this.getPositionKey(key), _value);
+    this.store.set(this.getPositionKey(key), _value || 0);
   }
 
   refresh(key: string | string[], el: ElementRef<HTMLElement> | HTMLElement) {
@@ -55,6 +55,6 @@ export class ScrollPositionService {
       base = base.sort().join("::");
     }
 
-    return base + this.config.urlSerializer(this.router.url);
+    return `${base}::` + this.config.urlSerializer(this.router.url);
   }
 }
