@@ -2,7 +2,11 @@ import { TestBed, inject } from "@angular/core/testing";
 
 import { IsLoadingService } from "./is-loading.service";
 import { BehaviorSubject, Subject, of } from "rxjs";
-import { take } from "rxjs/operators";
+import { skip, take, takeUntil, toArray } from "rxjs/operators";
+
+function wait(ms: number) {
+  return new Promise((res) => setTimeout(res, ms));
+}
 
 describe("IsLoadingService", () => {
   beforeEach(() => {
@@ -15,7 +19,7 @@ describe("IsLoadingService", () => {
   it("should be created", inject(
     [IsLoadingService],
     (service: IsLoadingService) => {
-      expect(service).toBeTruthy();
+      expect(service).toBeInstanceOf(IsLoadingService);
     }
   ));
 
@@ -26,7 +30,7 @@ describe("IsLoadingService", () => {
         async (service: IsLoadingService) => {
           const value = await service.isLoading$().pipe(take(1)).toPromise();
 
-          expect(value).toBeFalsy();
+          expect(value).toBe(false);
         }
       ));
 
@@ -37,25 +41,25 @@ describe("IsLoadingService", () => {
 
           let value = await service.isLoading$().pipe(take(1)).toPromise();
 
-          expect(value).toBeTruthy();
+          expect(value).toBe(true);
 
           service.add();
 
           value = await service.isLoading$().pipe(take(1)).toPromise();
 
-          expect(value).toBeTruthy();
+          expect(value).toBe(true);
 
           service.remove();
 
           value = await service.isLoading$().pipe(take(1)).toPromise();
 
-          expect(value).toBeTruthy();
+          expect(value).toBe(true);
 
           service.remove();
 
           value = await service.isLoading$().pipe(take(1)).toPromise();
 
-          expect(value).toBeFalsy();
+          expect(value).toBe(false);
         }
       ));
 
@@ -70,59 +74,80 @@ describe("IsLoadingService", () => {
 
           let value = await service.isLoading$().pipe(take(1)).toPromise();
 
-          expect(value).toBeTruthy();
+          expect(value).toBe(true);
 
           service.add(subscription);
 
           value = await service.isLoading$().pipe(take(1)).toPromise();
 
-          expect(value).toBeTruthy();
+          expect(value).toBe(true);
 
           subject.complete();
 
           value = await service.isLoading$().pipe(take(1)).toPromise();
 
-          expect(value).toBeFalsy();
+          expect(value).toBe(false);
         }
       ));
 
       it("#add w/ promise", inject(
         [IsLoadingService],
         async (service: IsLoadingService) => {
-          const resolvePromise = new Subject();
+          let resolvePromise!: () => void;
 
-          const promise = new Promise((resolve, reject) => {
-            resolvePromise.subscribe(() => {
-              resolve(true);
-              resolvePromise.complete();
-            });
+          const promise = new Promise((res) => {
+            resolvePromise = res;
           });
 
           service.add(promise);
 
           let value = await service.isLoading$().pipe(take(1)).toPromise();
 
-          expect(value).toBeTruthy();
+          expect(value).toBe(true);
 
           service.add(promise);
 
           value = await service.isLoading$().pipe(take(1)).toPromise();
 
-          expect(value).toBeTruthy();
+          expect(value).toBe(true);
+
+          const pending = service
+            .isLoading$()
+            .pipe(skip(1), take(1))
+            .toPromise();
 
           // resolve promise
-          resolvePromise.next(true);
+          resolvePromise();
+
+          value = await pending;
+
+          expect(value).toBe(false);
 
           value = await service.isLoading$().pipe(take(1)).toPromise();
 
-          expect(value).toBeFalsy();
+          expect(value).toBe(false);
+
+          const end = new Subject();
+
+          const pendingEvents = service
+            .isLoading$()
+            .pipe(takeUntil(end), toArray())
+            .toPromise();
 
           // Test adding promise which has already resolved
           service.add(promise);
 
-          value = await service.isLoading$().pipe(take(1)).toPromise();
+          await wait(0);
 
-          expect(value).toBeFalsy();
+          end.next();
+          end.complete();
+
+          const [e1, e2, e3, e4] = await pendingEvents;
+
+          expect(e1).toBe(false);
+          expect(e2).toBe(true);
+          expect(e3).toBe(false);
+          expect(e4).toBe(undefined);
         }
       ));
 
@@ -150,7 +175,7 @@ describe("IsLoadingService", () => {
             .pipe(take(1))
             .toPromise();
 
-          expect(value).toBeFalsy();
+          expect(value).toBe(false);
         }
       ));
 
@@ -166,11 +191,11 @@ describe("IsLoadingService", () => {
             .pipe(take(1))
             .toPromise();
 
-          expect(value!).toBeTruthy();
+          expect(value!).toBe(true);
 
           value = await service.isLoading$().pipe(take(1)).toPromise();
 
-          expect(value!).toBeFalsy();
+          expect(value!).toBe(false);
 
           service.add({ key: IsLoadingService });
 
@@ -179,11 +204,11 @@ describe("IsLoadingService", () => {
             .pipe(take(1))
             .toPromise();
 
-          expect(value!).toBeTruthy();
+          expect(value!).toBe(true);
 
           value = await service.isLoading$().pipe(take(1)).toPromise();
 
-          expect(value!).toBeFalsy();
+          expect(value!).toBe(false);
 
           service.remove({ key: IsLoadingService });
 
@@ -192,11 +217,11 @@ describe("IsLoadingService", () => {
             .pipe(take(1))
             .toPromise();
 
-          expect(value!).toBeTruthy();
+          expect(value!).toBe(true);
 
           value = await service.isLoading$().pipe(take(1)).toPromise();
 
-          expect(value!).toBeFalsy();
+          expect(value!).toBe(false);
 
           service.remove({ key: IsLoadingService });
 
@@ -205,11 +230,11 @@ describe("IsLoadingService", () => {
             .pipe(take(1))
             .toPromise();
 
-          expect(value!).toBeFalsy();
+          expect(value!).toBe(false);
 
           value = await service.isLoading$().pipe(take(1)).toPromise();
 
-          expect(value!).toBeFalsy();
+          expect(value!).toBe(false);
         }
       ));
 
@@ -229,11 +254,11 @@ describe("IsLoadingService", () => {
             .pipe(take(1))
             .toPromise();
 
-          expect(value).toBeTruthy();
+          expect(value).toBe(true);
 
           value = await service.isLoading$().pipe(take(1)).toPromise();
 
-          expect(value).toBeFalsy();
+          expect(value).toBe(false);
 
           service.add(subscription, { key: IsLoadingService });
 
@@ -242,39 +267,36 @@ describe("IsLoadingService", () => {
             .pipe(take(1))
             .toPromise();
 
-          expect(value).toBeTruthy();
+          expect(value).toBe(true);
 
           value = await service.isLoading$().pipe(take(1)).toPromise();
 
-          expect(value).toBeFalsy();
+          expect(value).toBe(false);
 
           subject.complete();
 
-          expect(subscription.closed).toBeTruthy();
+          expect(subscription.closed).toBe(true);
 
           value = await service
             .isLoading$({ key: IsLoadingService })
             .pipe(take(1))
             .toPromise();
 
-          expect(value).toBeFalsy();
+          expect(value).toBe(false);
 
           value = await service.isLoading$().pipe(take(1)).toPromise();
 
-          expect(value).toBeFalsy();
+          expect(value).toBe(false);
         }
       ));
 
       it("#add w/ promise", inject(
         [IsLoadingService],
         async (service: IsLoadingService) => {
-          const resolvePromise = new Subject();
+          let resolvePromise!: () => void;
 
-          const promise = new Promise((resolve, reject) => {
-            resolvePromise.subscribe(() => {
-              resolve(true);
-              resolvePromise.complete();
-            });
+          const promise = new Promise((res) => {
+            resolvePromise = res;
           });
 
           let value = false;
@@ -286,11 +308,11 @@ describe("IsLoadingService", () => {
             .pipe(take(1))
             .toPromise();
 
-          expect(value).toBeTruthy();
+          expect(value).toBe(true);
 
           value = await service.isLoading$().pipe(take(1)).toPromise();
 
-          expect(value).toBeFalsy();
+          expect(value).toBe(false);
 
           service.add(promise, { key: IsLoadingService });
 
@@ -299,39 +321,43 @@ describe("IsLoadingService", () => {
             .pipe(take(1))
             .toPromise();
 
-          expect(value).toBeTruthy();
+          expect(value).toBe(true);
 
           value = await service.isLoading$().pipe(take(1)).toPromise();
 
-          expect(value).toBeFalsy();
+          expect(value).toBe(false);
 
-          // resolve promise
-          resolvePromise.next();
-
-          value = await service
+          const pending = service
             .isLoading$({ key: IsLoadingService })
-            .pipe(take(1))
+            .pipe(skip(1), take(1))
             .toPromise();
 
-          expect(value).toBeFalsy();
+          // resolve promise
+          resolvePromise();
+
+          value = await pending;
+
+          expect(value).toBe(false);
 
           value = await service.isLoading$().pipe(take(1)).toPromise();
 
-          expect(value).toBeFalsy();
+          expect(value).toBe(false);
 
           // Test adding already resolved promise
           service.add(promise, { key: IsLoadingService });
 
+          await wait(0);
+
           value = await service
             .isLoading$({ key: IsLoadingService })
             .pipe(take(1))
             .toPromise();
 
-          expect(value).toBeFalsy();
+          expect(value).toBe(false);
 
           value = await service.isLoading$().pipe(take(1)).toPromise();
 
-          expect(value).toBeFalsy();
+          expect(value).toBe(false);
         }
       ));
 
@@ -344,10 +370,10 @@ describe("IsLoadingService", () => {
       //       countKey++
 
       //       if (countKey % 2 === 0) {
-      //         expect(value).toBeFalsy()
+      //         expect(value).toBe(false)
       //       }
       //       else {
-      //         expect(value).toBeTruthy()
+      //         expect(value).toBe(true)
       //       }
       //     })
 
@@ -382,18 +408,18 @@ describe("IsLoadingService", () => {
             .pipe(take(1))
             .toPromise();
 
-          expect(value).toBeTruthy();
+          expect(value).toBe(true);
 
           value = await service.isLoading$().pipe(take(1)).toPromise();
 
-          expect(value).toBeTruthy();
+          expect(value).toBe(true);
 
           value = await service
             .isLoading$({ key: "button" })
             .pipe(take(1))
             .toPromise();
 
-          expect(value).toBeFalsy();
+          expect(value).toBe(false);
 
           service.add({ key: [IsLoadingService, "button"] });
 
@@ -402,18 +428,18 @@ describe("IsLoadingService", () => {
             .pipe(take(1))
             .toPromise();
 
-          expect(value).toBeTruthy();
+          expect(value).toBe(true);
 
           value = await service.isLoading$().pipe(take(1)).toPromise();
 
-          expect(value).toBeTruthy();
+          expect(value).toBe(true);
 
           value = await service
             .isLoading$({ key: "button" })
             .pipe(take(1))
             .toPromise();
 
-          expect(value).toBeTruthy();
+          expect(value).toBe(true);
 
           service.remove({ key: [IsLoadingService, "default"] });
 
@@ -422,18 +448,18 @@ describe("IsLoadingService", () => {
             .pipe(take(1))
             .toPromise();
 
-          expect(value).toBeTruthy();
+          expect(value).toBe(true);
 
           value = await service.isLoading$().pipe(take(1)).toPromise();
 
-          expect(value).toBeFalsy();
+          expect(value).toBe(false);
 
           value = await service
             .isLoading$({ key: "button" })
             .pipe(take(1))
             .toPromise();
 
-          expect(value).toBeTruthy();
+          expect(value).toBe(true);
 
           service.remove({ key: [IsLoadingService, "button"] });
 
@@ -442,18 +468,18 @@ describe("IsLoadingService", () => {
             .pipe(take(1))
             .toPromise();
 
-          expect(value).toBeFalsy();
+          expect(value).toBe(false);
 
           value = await service.isLoading$().pipe(take(1)).toPromise();
 
-          expect(value).toBeFalsy();
+          expect(value).toBe(false);
 
           value = await service
             .isLoading$({ key: "button" })
             .pipe(take(1))
             .toPromise();
 
-          expect(value).toBeFalsy();
+          expect(value).toBe(false);
         }
       ));
 
@@ -469,11 +495,11 @@ describe("IsLoadingService", () => {
             .pipe(take(1))
             .toPromise();
 
-          expect(value).toBeTruthy();
+          expect(value).toBe(true);
 
           value = await service.isLoading$().pipe(take(1)).toPromise();
 
-          expect(value).toBeTruthy();
+          expect(value).toBe(true);
 
           service.remove({ key: IsLoadingService });
 
@@ -489,7 +515,7 @@ describe("IsLoadingService", () => {
             .pipe(take(1))
             .toPromise();
 
-          expect(value).toBeFalsy();
+          expect(value).toBe(false);
 
           service.remove();
           service.add({ key: [IsLoadingService, "button"] });
@@ -499,14 +525,14 @@ describe("IsLoadingService", () => {
             .pipe(take(1))
             .toPromise();
 
-          expect(value).toBeTruthy();
+          expect(value).toBe(true);
 
           value = await service
             .isLoading$({ key: "button" })
             .pipe(take(1))
             .toPromise();
 
-          expect(value).toBeTruthy();
+          expect(value).toBe(true);
 
           service.remove({ key: "button" });
 
@@ -515,7 +541,7 @@ describe("IsLoadingService", () => {
             .pipe(take(1))
             .toPromise();
 
-          expect(value).toBeTruthy();
+          expect(value).toBe(true);
 
           service.remove({ key: IsLoadingService });
 
@@ -524,7 +550,7 @@ describe("IsLoadingService", () => {
             .pipe(take(1))
             .toPromise();
 
-          expect(value).toBeFalsy();
+          expect(value).toBe(false);
         }
       ));
     });
@@ -539,14 +565,14 @@ describe("IsLoadingService", () => {
 
           value = await service.isLoading$().pipe(take(1)).toPromise();
 
-          expect(value).toBeTruthy();
+          expect(value).toBe(true);
 
           value = await service
             .isLoading$({ key: "button" })
             .pipe(take(1))
             .toPromise();
 
-          expect(value).toBeFalsy();
+          expect(value).toBe(false);
 
           service.add({ key: IsLoadingService, unique: IsLoadingService });
 
@@ -555,23 +581,23 @@ describe("IsLoadingService", () => {
             .pipe(take(1))
             .toPromise();
 
-          expect(value).toBeTruthy();
+          expect(value).toBe(true);
 
           value = await service.isLoading$().pipe(take(1)).toPromise();
 
-          expect(value).toBeTruthy();
+          expect(value).toBe(true);
 
           service.add({ unique: IsLoadingService });
 
           value = await service.isLoading$().pipe(take(1)).toPromise();
 
-          expect(value).toBeTruthy();
+          expect(value).toBe(true);
 
           service.remove();
 
           value = await service.isLoading$().pipe(take(1)).toPromise();
 
-          expect(value).toBeFalsy();
+          expect(value).toBe(false);
 
           service.remove({ key: IsLoadingService });
 
@@ -580,7 +606,7 @@ describe("IsLoadingService", () => {
             .pipe(take(1))
             .toPromise();
 
-          expect(value).toBeFalsy();
+          expect(value).toBe(false);
 
           service.add({ key: IsLoadingService, unique: IsLoadingService });
           service.add({ key: IsLoadingService, unique: IsLoadingService });
@@ -590,7 +616,7 @@ describe("IsLoadingService", () => {
             .pipe(take(1))
             .toPromise();
 
-          expect(value).toBeTruthy();
+          expect(value).toBe(true);
 
           service.remove({ key: IsLoadingService });
 
@@ -599,7 +625,7 @@ describe("IsLoadingService", () => {
             .pipe(take(1))
             .toPromise();
 
-          expect(value).toBeFalsy();
+          expect(value).toBe(false);
         }
       ));
     });
@@ -610,7 +636,7 @@ describe("IsLoadingService", () => {
       it("#isLoading$ simple", inject(
         [IsLoadingService],
         (service: IsLoadingService) => {
-          expect(service.isLoading()).toBeFalsy();
+          expect(service.isLoading()).toBe(false);
         }
       ));
 
@@ -619,19 +645,19 @@ describe("IsLoadingService", () => {
         (service: IsLoadingService) => {
           service.add();
 
-          expect(service.isLoading()).toBeTruthy();
+          expect(service.isLoading()).toBe(true);
 
           service.add();
 
-          expect(service.isLoading()).toBeTruthy();
+          expect(service.isLoading()).toBe(true);
 
           service.remove();
 
-          expect(service.isLoading()).toBeTruthy();
+          expect(service.isLoading()).toBe(true);
 
           service.remove();
 
-          expect(service.isLoading()).toBeFalsy();
+          expect(service.isLoading()).toBe(false);
         }
       ));
 
@@ -642,14 +668,14 @@ describe("IsLoadingService", () => {
 
           const subscription = service.add(subject.subscribe());
 
-          expect(service.isLoading()).toBeTruthy();
+          expect(service.isLoading()).toBe(true);
 
           service.add(subscription);
-          expect(service.isLoading()).toBeTruthy();
+          expect(service.isLoading()).toBe(true);
 
           subject.complete();
 
-          expect(service.isLoading()).toBeFalsy();
+          expect(service.isLoading()).toBe(false);
         }
       ));
 
@@ -667,16 +693,16 @@ describe("IsLoadingService", () => {
 
           service.add(promise);
 
-          expect(service.isLoading()).toBeTruthy();
+          expect(service.isLoading()).toBe(true);
 
           service.add(promise);
-          expect(service.isLoading()).toBeTruthy();
+          expect(service.isLoading()).toBe(true);
 
           resolvePromise.next();
 
           await promise;
 
-          expect(service.isLoading()).toBeFalsy();
+          expect(service.isLoading()).toBe(false);
         }
       ));
 
@@ -695,7 +721,7 @@ describe("IsLoadingService", () => {
       it("#isLoading$ simple", inject(
         [IsLoadingService],
         (service: IsLoadingService) => {
-          expect(service.isLoading({ key: IsLoadingService })).toBeFalsy();
+          expect(service.isLoading({ key: IsLoadingService })).toBe(false);
         }
       ));
 
@@ -704,23 +730,23 @@ describe("IsLoadingService", () => {
         (service: IsLoadingService) => {
           service.add({ key: IsLoadingService });
 
-          expect(service.isLoading({ key: IsLoadingService })).toBeTruthy();
-          expect(service.isLoading()).toBeFalsy();
+          expect(service.isLoading({ key: IsLoadingService })).toBe(true);
+          expect(service.isLoading()).toBe(false);
 
           service.add({ key: IsLoadingService });
 
-          expect(service.isLoading({ key: IsLoadingService })).toBeTruthy();
-          expect(service.isLoading()).toBeFalsy();
+          expect(service.isLoading({ key: IsLoadingService })).toBe(true);
+          expect(service.isLoading()).toBe(false);
 
           service.remove({ key: IsLoadingService });
 
-          expect(service.isLoading({ key: IsLoadingService })).toBeTruthy();
-          expect(service.isLoading()).toBeFalsy();
+          expect(service.isLoading({ key: IsLoadingService })).toBe(true);
+          expect(service.isLoading()).toBe(false);
 
           service.remove({ key: IsLoadingService });
 
-          expect(service.isLoading({ key: IsLoadingService })).toBeFalsy();
-          expect(service.isLoading()).toBeFalsy();
+          expect(service.isLoading({ key: IsLoadingService })).toBe(false);
+          expect(service.isLoading()).toBe(false);
         }
       ));
 
@@ -733,20 +759,20 @@ describe("IsLoadingService", () => {
 
           service.add(subscription, { key: IsLoadingService });
 
-          expect(service.isLoading({ key: IsLoadingService })).toBeTruthy();
-          expect(service.isLoading()).toBeFalsy();
+          expect(service.isLoading({ key: IsLoadingService })).toBe(true);
+          expect(service.isLoading()).toBe(false);
 
           service.add(subscription, { key: IsLoadingService });
 
-          expect(service.isLoading({ key: IsLoadingService })).toBeTruthy();
-          expect(service.isLoading()).toBeFalsy();
+          expect(service.isLoading({ key: IsLoadingService })).toBe(true);
+          expect(service.isLoading()).toBe(false);
 
           subject.complete();
 
-          expect(subscription.closed).toBeTruthy();
+          expect(subscription.closed).toBe(true);
 
-          expect(service.isLoading({ key: IsLoadingService })).toBeFalsy();
-          expect(service.isLoading()).toBeFalsy();
+          expect(service.isLoading({ key: IsLoadingService })).toBe(false);
+          expect(service.isLoading()).toBe(false);
         }
       ));
 
@@ -764,20 +790,20 @@ describe("IsLoadingService", () => {
 
           service.add(promise, { key: IsLoadingService });
 
-          expect(service.isLoading({ key: IsLoadingService })).toBeTruthy();
-          expect(service.isLoading()).toBeFalsy();
+          expect(service.isLoading({ key: IsLoadingService })).toBe(true);
+          expect(service.isLoading()).toBe(false);
 
           service.add(promise, { key: IsLoadingService });
 
-          expect(service.isLoading({ key: IsLoadingService })).toBeTruthy();
-          expect(service.isLoading()).toBeFalsy();
+          expect(service.isLoading({ key: IsLoadingService })).toBe(true);
+          expect(service.isLoading()).toBe(false);
 
           resolvePromise.next();
 
           await promise;
 
-          expect(service.isLoading({ key: IsLoadingService })).toBeFalsy();
-          expect(service.isLoading()).toBeFalsy();
+          expect(service.isLoading({ key: IsLoadingService })).toBe(false);
+          expect(service.isLoading()).toBe(false);
         }
       ));
     });

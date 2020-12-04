@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { BehaviorSubject, Subscription, Observable, combineLatest } from "rxjs";
-import { distinctUntilChanged, debounceTime, take, map } from "rxjs/operators";
+import { distinctUntilChanged, take, map } from "rxjs/operators";
 
 export type Key = string | object | symbol;
 
@@ -142,7 +142,7 @@ export class IsLoadingService {
 
       const subscription = this.loadingSubjects
         .get(keys[0])!
-        .pipe(distinctUntilChanged(), debounceTime(10), distinctUntilChanged())
+        .pipe(distinctUntilChanged())
         .subscribe(observer);
 
       // the return value is the teardown function,

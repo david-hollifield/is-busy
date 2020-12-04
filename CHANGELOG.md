@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- [BREAKING] Remove `debounceTime()` from `IsLoadingService#isLoading$()`. I added it a long time ago as part of an effort to address some "changed after checked" errors I was running into. It was always unclear to me if it was necessary or if something else I did fixed the problem. Regardless, it doesn't currently appear to be necessary so I'm going to try publishing an expirimental release with this change and seeing if it causes any problems in my app. If it doesn't, I'll probably fold this into a new major release. I'm marking this a breaking change because this technically is one, but I highly doubt this will impact anyone.
 - [FEATURE] `IsLoadingService#isLoading$(IGetLoadingOptions)` now accepts an array of keys in addition to a single key argument. If an array of keys if passed, the observable will emit `true` so long as any key is loading, and `false` otherwise.
 - [FEATURE] Added a new `@service-work/scroll-position` package that integrates with the `IsLoadingService` to save and refresh an element's scroll position. The package includes a `ScrollPositionService` that can be used stand-alone as well as a `ScrollPositionDirective` that can be applied to an element to save and automatically refresh an element's scroll position after route navigation.
 - [FIX] Fix a bug that could occur when calling `IsLoadingService#remove()` with an array of keys, some of which were invalid ([#5](https://gitlab.com/service-work/is-loading/-/issues/5))
