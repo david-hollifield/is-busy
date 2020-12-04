@@ -3,6 +3,9 @@
   "dest": "../../dist/scroll-position",
   "deleteDestPath": false,
   "lib": {
-    "entryFile": "src/public-api.ts"
+    "entryFile": "src/public-api.ts",
+    "umdModuleIds": {
+      "@service-work/is-loading": "service-work.is-loading"
+    }
   }
 }

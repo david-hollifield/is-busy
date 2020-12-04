@@ -20,12 +20,12 @@
     "service"
   ],
   "dependencies": {
-    "@service-work/is-loading": "^4.0.0"
+    "tslib": "^2.0.0"
   },
   "peerDependencies": {
     "@angular/core": "8 || 9 || 10 || 11",
     "@angular/router": "8 || 9 || 10 || 11",
-    "rxjs": "^6.0.0",
-    "tslib": "^2.0.0"
+    "@service-work/is-loading": "^4.0.0",
+    "rxjs": "^6.0.0"
   }
 }
