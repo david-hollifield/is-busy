@@ -1,0 +1,26 @@
+{
+  "name": "@service-work/is-loading",
+  "version": "4.0.0",
+  "description": "A simple and flexible loading indicator service for Angular apps.",
+  "author": "John Carroll <john.carroll.p@gmail.com>",
+  "homepage": "https://gitlab.com/service-work/is-loading",
+  "bugs": "https://gitlab.com/service-work/is-loading/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.com/service-work/is-loading.git"
+  },
+  "license": "Unlicense",
+  "keywords": [
+    "angular",
+    "javascript",
+    "typescript",
+    "loading indicator",
+    "is loading",
+    "service"
+  ],
+  "peerDependencies": {
+    "@angular/core": "8 || 9 || 10 || 11",
+    "rxjs": "^6.0.0",
+    "tslib": "^2.0.0"
+  }
+}

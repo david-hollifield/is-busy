@@ -1,20 +1,22 @@
-import * as fs from 'fs';
+// THIS FILE IS NO LONGER USED
 
-const file = fs.readFileSync('./package.json', {encoding: 'utf8'})
+// import * as fs from 'fs';
 
-const oldPackage = JSON.parse(file)
+// const file = fs.readFileSync('./package.json', {encoding: 'utf8'})
 
-let newPubPackage: any = {}
+// const oldPackage = JSON.parse(file)
 
-newPubPackage['name'] = oldPackage['name']
-newPubPackage['version'] = oldPackage['version']
-newPubPackage['description'] = oldPackage['description']
-newPubPackage['author'] = oldPackage['author']
-newPubPackage['homepage'] = oldPackage['homepage']
-newPubPackage['bugs'] = oldPackage['bugs']
-newPubPackage['repository'] = oldPackage['repository']
-newPubPackage['license'] = oldPackage['license']
-newPubPackage['keywords'] = oldPackage['keywords']
-newPubPackage['peerDependencies'] = oldPackage['peerDependencies']
+// let newPubPackage: any = {}
 
-fs.writeFileSync('./lib/package.json', JSON.stringify(newPubPackage), {encoding: 'utf8'})
+// newPubPackage['name'] = oldPackage['name']
+// newPubPackage['version'] = oldPackage['version']
+// newPubPackage['description'] = oldPackage['description']
+// newPubPackage['author'] = oldPackage['author']
+// newPubPackage['homepage'] = oldPackage['homepage']
+// newPubPackage['bugs'] = oldPackage['bugs']
+// newPubPackage['repository'] = oldPackage['repository']
+// newPubPackage['license'] = oldPackage['license']
+// newPubPackage['keywords'] = oldPackage['keywords']
+// newPubPackage['peerDependencies'] = oldPackage['peerDependencies']
+
+// fs.writeFileSync('./lib/package.json', JSON.stringify(newPubPackage), {encoding: 'utf8'})

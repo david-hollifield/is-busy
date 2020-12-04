@@ -1,12 +1,12 @@
 import { Injectable } from "@angular/core";
-import { BehaviorSubject, Subscription, Observable } from "rxjs";
-import { distinctUntilChanged, debounceTime, take } from "rxjs/operators";
+import { BehaviorSubject, Subscription, Observable, combineLatest } from "rxjs";
+import { distinctUntilChanged, debounceTime, take, map } from "rxjs/operators";
 
 export type Key = string | object | symbol;
 
 export interface IGetLoadingOptions {
   /** Which loading "thing" do you want to track? */
-  key?: Key;
+  key?: Key | Key[];
 }
 
 export interface IAddLoadingOptions {
@@ -77,7 +77,9 @@ export class IsLoadingService {
    * When called without arguments, returns the default *isLoading*
    * observable for your app. When called with an options object
    * containing a `key` property, returns the *isLoading* observable
-   * corresponding to that key.
+   * corresponding to that key. When called with an array of keys,
+   * returns an observable that emits true while any key is loading
+   * and false otherwise.
    *
    * Internally, *isLoading* observables are `BehaviorSubject`s, so
    * they will return values immediately upon subscription.
@@ -119,6 +121,18 @@ export class IsLoadingService {
    * @param args.key optionally specify the key to subscribe to
    */
   isLoading$(args: IGetLoadingOptions = {}): Observable<boolean> {
+    if (Array.isArray(args.key)) {
+      if (args.key.length === 0) {
+        throw new Error(
+          `Must provide at least one key when passing an array of keys`
+        );
+      }
+
+      return combineLatest(
+        args.key.map((key) => this.isLoading$({ key }))
+      ).pipe(map((values) => values.some((v) => v)));
+    }
+
     const keys = this.normalizeKeys(args.key);
 
     return new Observable<boolean>((observer) => {
