@@ -456,6 +456,77 @@ describe("IsLoadingService", () => {
           expect(value).toBeFalsy();
         }
       ));
+
+      it("isLoading$()", inject(
+        [IsLoadingService],
+        async (service: IsLoadingService) => {
+          let value = false;
+
+          service.add({ key: [IsLoadingService, "default"] });
+
+          value = await service
+            .isLoading$({ key: [IsLoadingService, "button"] })
+            .pipe(take(1))
+            .toPromise();
+
+          expect(value).toBeTruthy();
+
+          value = await service.isLoading$().pipe(take(1)).toPromise();
+
+          expect(value).toBeTruthy();
+
+          service.remove({ key: IsLoadingService });
+
+          value = await service
+            .isLoading$({ key: [IsLoadingService, "button"] })
+            .pipe(take(1))
+            .toPromise();
+
+          expect(value).toBe(false);
+
+          value = await service
+            .isLoading$({ key: "button" })
+            .pipe(take(1))
+            .toPromise();
+
+          expect(value).toBeFalsy();
+
+          service.remove();
+          service.add({ key: [IsLoadingService, "button"] });
+
+          value = await service
+            .isLoading$({ key: [IsLoadingService, "button"] })
+            .pipe(take(1))
+            .toPromise();
+
+          expect(value).toBeTruthy();
+
+          value = await service
+            .isLoading$({ key: "button" })
+            .pipe(take(1))
+            .toPromise();
+
+          expect(value).toBeTruthy();
+
+          service.remove({ key: "button" });
+
+          value = await service
+            .isLoading$({ key: [IsLoadingService, "button"] })
+            .pipe(take(1))
+            .toPromise();
+
+          expect(value).toBeTruthy();
+
+          service.remove({ key: IsLoadingService });
+
+          value = await service
+            .isLoading$({ key: [IsLoadingService, "button"] })
+            .pipe(take(1))
+            .toPromise();
+
+          expect(value).toBeFalsy();
+        }
+      ));
     });
 
     describe("unique", () => {
