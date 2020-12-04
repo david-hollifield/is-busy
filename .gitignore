@@ -5,6 +5,7 @@
 /tmp
 /out-tsc
 /lib/package.json
+/projects/*/build
 
 # dependencies
 /node_modules

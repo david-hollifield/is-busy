@@ -19,10 +19,11 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build --project is-loading --prod && ng build --project scroll-position --prod",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
+    "pubcanary": "yarn test && yarn lerna version --preid next -c && yarn build && yarn lerna publish from-git --yes --contents build",
     "pub": "yarn test && yarn version && yarn build --prod && yarn publish dist/is-loading --non-interactive"
   },
   "devDependencies": {
