@@ -134,7 +134,10 @@ export class IsLoadingService {
 
       return combineLatest(
         args.key.map((key) => this.isLoading$({ key }))
-      ).pipe(map((values) => values.some((v) => v)));
+      ).pipe(
+        map((values) => values.some((v) => v)),
+        distinctUntilChanged()
+      );
     }
 
     const keys = this.normalizeKeys(args.key);
