@@ -1,12 +1,14 @@
-# Angular IsLoading
+# Angular IsLoading & ScrollPosition
 
 [![NPM version](https://flat.badgen.net/npm/v/@service-work/is-loading)](https://www.npmjs.com/package/@service-work/is-loading) [![Size when minified & gzipped](https://flat.badgen.net/bundlephobia/minzip/@service-work/is-loading)](https://bundlephobia.com/result?p=@service-work/is-loading) [![Angular versions 8+ are supported - see compatibility below](https://flat.badgen.net/badge/Angular/v8%2B/cyan)](https://angular.io/)
 
 [IsLoadingService](#isloadingservice) is a simple angular service that makes it easy to track whether your app, or parts of it, are loading. The optional companion [IsLoadingModule](#isloadingmodule) contains an [IsLoadingPipe](#isloadingpipe) that makes it easy to subscribe to IsLoadingService inside a component's template, as well as an [IsLoadingDirective](#isloadingdirective) that makes it easy to add a loading indicator (and/or disable) HTML elements while loading is happening.
 
+These is a separate and optional [ScrollPositionDirective](#scrollpositiondirective) and `ScrollPositionService` that integrates with `IsLoadingService` and can be used to easily refresh the scroll position of individual HTML elements on router navigation.
+
 #### [See simple demo](https://codesandbox.io/s/isloadingservice-example-ujlgm?file=/src/app/app.component.ts)
 
-You can install it with
+You can install the `IsLoadingService` with
 
 ```bash
 yarn add @service-work/is-loading
@@ -16,16 +18,29 @@ yarn add @service-work/is-loading
 npm install @service-work/is-loading
 ```
 
-_For those interested: by itself, the minzipped size of IsLoadingService is a little under 1kb._
+You can install the `ScrollPositionDirective` with
+
+```bash
+yarn add @service-work/is-loading @service-work/scroll-position
+
+# or
+
+npm install @service-work/is-loading @service-work/scroll-position
+```
+
+_For those interested: by itself, the minzipped size of IsLoadingService is around 1kb._
 
 ### Table of Contents
 
 - [IsLoadingService](#isloadingservice)
-  - [Advanced Usage](#advanced-usage)
-  - [Interface](#interface)
+  - [Advanced IsLoadingService Usage](#advanced-isloadingservice-usage)
+  - [IsLoadingService Interface](#isloadingservice-interface)
 - [IsLoadingModule](#isloadingmodule)
   - [IsLoadingPipe](#isloadingpipe)
   - [IsLoadingDirective](#isloadingdirective)
+- [ScrollPositionDirective](#scrollpositiondirective)
+  - [Advanced ScrollPositionDirective Usage](#advanced-scrollpositiondirective-usage)
+  - [ScrollPosition Interface](#scrollposition-interface)
 
 ## IsLoadingService
 
@@ -100,7 +115,7 @@ If you just want to check the current value of `isLoading$()`, you can call `isL
 
 Helpfully, if `loadingService.add()` is called with a `Promise`, `Subscription`, or `Observable` argument, that argument will be returned from the method. This simplifies method chaining. For example, in `await isLoading.add(promise)` the `await` is referring to the `promise` variable.
 
-### Advanced Usage
+### Advanced IsLoadingService Usage
 
 For more advanced scenarios, you can call `add()` with an options object containing a `key` property. The key allows you to track the loading of different things seperately. The key argument accepts a string, object, or symbol, or an array of these. The key option for `add()` is intended to be used in conjunction with `key` options for `isLoading$()` and `remove()`. If you pass an array of keys to `add()`, then each of those keys will be marked as loading (`remove()` works similarly).
 
@@ -135,7 +150,7 @@ class MyCustomComponent implements OnInit, AfterViewInit {
 }
 ```
 
-### Interface
+### IsLoadingService Interface
 
 ````typescript
 class IsLoadingService {
@@ -293,6 +308,112 @@ const myConfig: ISWIsLoadingDirectiveConfig = {
   providers: [{ provide: SW_IS_LOADING_DIRECTIVE_CONFIG, useValue: myConfig }],
 })
 export class MyModule {}
+```
+
+## ScrollPositionDirective
+
+The `ScrollPositionDirective` integrates with the `IsLoadingService` and allows you to easily refresh the scroll position of an HTML element (including angular components) on router navigation.
+
+Basic usage:
+
+```ts
+@Component({
+  selector: "app-root",
+  template: `
+    <user-list swScrollPosition="user-list">
+      <user-profile *ngFor="let user of users | async" [user]="user">
+      </user-profile>
+    </user-list>
+  `,
+})
+export class AppComponent {
+  users: Observable<IUser[]>;
+
+  constructor(
+    private isLoadingService: IsLoadingService,
+    // assuming `UserService` is a service you made for your app
+    private userService: UserService
+  ) {}
+
+  ngOnInit() {
+    this.users = this.isLoadingService.add(
+      // assuming `UserService#getUsers()` returns `Observable<IUser[]>`
+      this.userService.getUsers(),
+      { key: "user-list" }
+    );
+  }
+}
+```
+
+In this example, the `ScrollPositionDirective` hooks into the angular router. When a user navigates away from the current page, the `ScrollPositionDirective` saves the current scroll position (i.e. `scrollTop`) of the `user-list` component. When the user navigates back to this page, the `ScrollPositionDirective` will subscribe to the `user-list` isLoading state. When the `user-list` isLoading state next emits `false`, then the `ScrollPositionDirective` will refresh the last known scroll position of the `user-list` component (if one exists).
+
+### Advanced ScrollPositionDirective Usage
+
+The `ScrollPositionDirective` has a few configuation options.
+
+1. You can configure an optional milliseconds delay that is added before the scroll position is refreshed using the `swScrollPositionDelay` input property (e.g. `swScrollPositionDelay='10'` or `[swScrollPositionDelay]='10'`).
+2. You can configure whether the scroll position should be saved on router navigation (the default) or instead when the host component is destroyed via the `swScrollPositionSaveMode` input property (e.g. `swScrollPositionSaveMode='OnDestroy'`). Consider using `OnDestroy` if the host component is removed from the DOM via, for example, an `ngIf` directive. In this case, you might want to refresh the scroll position without ever having triggered a router navigation event.
+
+Note also that the scroll position is automatically associated with the provided loading key as well as the current URL. This means that whenever the URL updates the current scroll position will be saved with the current, provided isLoading keys + url used as the scroll position key. It's possible that some aspects of the URL should not be associated with the current scroll position. You can provide a custom url serializer function by re-providing the `SW_SCROLL_POSITION_CONFIG` in a component or module.
+
+For example:
+
+```ts
+export function myUrlSerializer(url: string): string {
+  // manually strip parts of the URL (e.g. query params) that are unrelated
+  // to the scroll position...
+}
+
+@Component({
+  selector: "app-root",
+  template: `
+    <user-list swScrollPosition="user-list">
+      <user-profile *ngFor="let user of users | async" [user]="user">
+      </user-profile>
+    </user-list>
+  `,
+  providers: [
+    {
+      provide: SW_SCROLL_POSITION_CONFIG,
+      userValue: {
+        urlSerializer: myUrlSerializer,
+      },
+    },
+  ],
+})
+export class AppComponent {
+  // etc...
+}
+```
+
+You can also use the `ScrollPositionService` without using the `ScrollPositionDirective`.
+
+### ScrollPosition Interface
+
+```ts
+class ScrollPositionDirective {
+  @Input("swScrollPosition") key: string | string[];
+  @Input() swScrollPositionDelay: number | string; // string values will be coerced into integers
+  @Input() swScrollPositionSaveMode: "OnNavigate" | "OnDestroy";
+}
+
+class ScrollPositionService {
+  get(key: string | string[]): number;
+
+  save(
+    key: string | string[],
+    value: ElementRef<HTMLElement> | HTMLElement | number
+  ): void;
+
+  refresh(
+    key: string | string[],
+    el: ElementRef<HTMLElement> | HTMLElement
+  ): void;
+}
+
+interface IScrollPositionServiceConfig {
+  urlSerializer?: (url: string) => string;
+}
 ```
 
 ## Compatibility
