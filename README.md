@@ -161,7 +161,7 @@ class IsLoadingService {
 type Key = string | object | symbol;
 
 interface IGetLoadingOptions {
-  key?: Key;
+  key?: Key | Key[];
 }
 
 interface IAddLoadingOptions {
