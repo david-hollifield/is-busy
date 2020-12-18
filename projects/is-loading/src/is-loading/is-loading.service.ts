@@ -41,7 +41,11 @@ export interface IRemoveLoadingOptions {
 }
 
 class LoadingToken<T> {
-  constructor(private value: T, private unique?: Key) {}
+  constructor(
+    public value: T,
+    public isManagedByIsLoadingService: boolean,
+    private unique?: Key
+  ) {}
 
   isSame(a: unknown, unique?: Key): boolean {
     if (a === this.value) return true;
@@ -305,11 +309,17 @@ export class IsLoadingService {
         );
 
         if (index >= 0) {
-          loadingStack.splice(index, 1);
+          const loadingToken = loadingStack.splice(index, 1)[0];
+
+          if (loadingToken.isManagedByIsLoadingService) {
+            (loadingToken.value as Subscription).unsubscribe();
+          }
         }
       }
 
-      loadingStack.push(new LoadingToken(sub || true, options?.unique));
+      loadingStack.push(
+        new LoadingToken(sub || true, a instanceof Observable, options?.unique)
+      );
 
       this.updateLoadingStatus(key);
     }
@@ -403,7 +413,11 @@ export class IsLoadingService {
       const index = loadingStack.findIndex((t) => t.isSame(sub || true));
 
       if (index >= 0) {
-        loadingStack.splice(index, 1);
+        const loadingToken = loadingStack.splice(index, 1)[0];
+
+        if (loadingToken.isManagedByIsLoadingService) {
+          (loadingToken.value as Subscription).unsubscribe();
+        }
 
         this.updateLoadingStatus(key);
 
@@ -411,6 +425,34 @@ export class IsLoadingService {
       }
     }
   }
+
+  // /**
+  //  * Clears all the loading indicators for the given key or keys,
+  //  * reseting the loading status for those keys to `false`.
+  //  *
+  //  * Use `"default"` to clear the default key.
+  //  */
+  // clear(key: Key | Key[]) {
+  //   const keys = this.normalizeKeys(key);
+
+  //   for (const k of keys) {
+  //     const loadingStack = this.loadingStacks.get(k);
+
+  //     // !loadingStack means that a user has called clear() needlessly
+  //     if (!loadingStack) continue;
+
+  //     for (const loadingToken of loadingStack) {
+  //       this.deIndexKey(k);
+
+  //       if (!loadingToken.isManagedByIsLoadingService) continue;
+
+  //       (loadingToken.value as Subscription).unsubscribe();
+  //     }
+
+  //     this.loadingStacks.set(k, []);
+  //     this.updateLoadingStatus(k);
+  //   }
+  // }
 
   private normalizeKeys(key?: Key | Key[]): Key[] {
     if (!key) key = [this.defaultKey];
