@@ -32,6 +32,10 @@ export class ScrollPositionService {
 
   save(
     key: string | string[],
+    /**
+     * If an `ElementRef` or `HTMLElement` is provided,
+     * the `scrollTop` is extracted and saved with the provided key(s)
+     */
     value: ElementRef<HTMLElement> | HTMLElement | number
   ) {
     const _value =

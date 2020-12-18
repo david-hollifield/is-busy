@@ -69,7 +69,7 @@ export class ScrollPositionDirective implements AfterViewInit, OnDestroy {
         .pipe(
           filter((v) => !v),
           take(1),
-          // we need to wait a tick before refreshing to ensure that angular
+          // we need to wait at least a tick before refreshing to ensure that angular
           // updates the dom before we refresh
           delay(this.delay)
         )
