@@ -12,26 +12,27 @@ import {
   Injector,
   Inject,
   Optional,
-} from '@angular/core';
-import { Observable, Subscription } from 'rxjs';
-import { IsLoadingService } from '../../is-loading.service';
-import { IsLoadingSpinnerComponent } from './is-loading-spinner.component';
+} from "@angular/core";
+import { Observable, Subscription } from "rxjs";
+import { debounceTime, distinctUntilChanged } from "rxjs/operators";
+import { IsLoadingService } from "../../is-loading.service";
+import { IsLoadingSpinnerComponent } from "./is-loading-spinner.component";
 import {
   SW_IS_LOADING_DIRECTIVE_CONFIG,
   ISWIsLoadingDirectiveConfig,
-} from './is-loading.directive.config';
+} from "./is-loading.directive.config";
 
 // This code was inspired by angular2-promise-buttons
 // https://github.com/johannesjo/angular2-promise-buttons
 
 @Directive({
-  selector: '[swIsLoading]',
-  exportAs: 'swIsLoading',
+  selector: "[swIsLoading]",
+  exportAs: "swIsLoading",
 })
 export class IsLoadingDirective implements OnChanges, AfterViewInit, OnDestroy {
   @Input()
   set swIsLoading(value: unknown) {
-    if (typeof value === 'string') {
+    if (typeof value === "string") {
       this.stringValue(value);
     } else {
       this.notStringValue();
@@ -49,7 +50,7 @@ export class IsLoadingDirective implements OnChanges, AfterViewInit, OnDestroy {
       this.notPromiseValue();
     }
 
-    if (typeof value === 'boolean') {
+    if (typeof value === "boolean") {
       this.booleanValue(value);
     } else {
       this.notBooleanValue();
@@ -99,7 +100,7 @@ export class IsLoadingDirective implements OnChanges, AfterViewInit, OnDestroy {
 
   private loadingClass = this.config.loadingClass
     ? this.config.loadingClass
-    : 'sw-is-loading';
+    : "sw-is-loading";
 
   private set pending(value: Promise<unknown>) {
     this.startLoading();
@@ -117,7 +118,7 @@ export class IsLoadingDirective implements OnChanges, AfterViewInit, OnDestroy {
     private isLoadingService: IsLoadingService,
     private el: ElementRef<HTMLElement>,
     private componentFactoryResolver: ComponentFactoryResolver,
-    private injector: Injector,
+    private injector: Injector
   ) {
     this.config = config || {};
   }
@@ -139,7 +140,7 @@ export class IsLoadingDirective implements OnChanges, AfterViewInit, OnDestroy {
       !changes.swIsLoadingDisableEl.isFirstChange() &&
       !changes.swIsLoadingDisableEl.currentValue
     ) {
-      this.renderer.removeAttribute(this.el.nativeElement, 'disabled');
+      this.renderer.removeAttribute(this.el.nativeElement, "disabled");
     }
   }
 
@@ -158,7 +159,7 @@ export class IsLoadingDirective implements OnChanges, AfterViewInit, OnDestroy {
   private startLoading() {
     this.renderer.addClass(this.el.nativeElement, this.loadingClass);
     if (this.swIsLoadingDisableEl) {
-      this.renderer.setAttribute(this.el.nativeElement, 'disabled', 'disabled');
+      this.renderer.setAttribute(this.el.nativeElement, "disabled", "disabled");
     }
     this._isLoading = true;
   }
@@ -166,7 +167,7 @@ export class IsLoadingDirective implements OnChanges, AfterViewInit, OnDestroy {
   private stopLoading() {
     this.renderer.removeClass(this.el.nativeElement, this.loadingClass);
     if (this.swIsLoadingDisableEl) {
-      this.renderer.removeAttribute(this.el.nativeElement, 'disabled');
+      this.renderer.removeAttribute(this.el.nativeElement, "disabled");
     }
     this._isLoading = false;
   }
@@ -182,7 +183,7 @@ export class IsLoadingDirective implements OnChanges, AfterViewInit, OnDestroy {
     // is applied to
     this.renderer.appendChild(
       this.el.nativeElement,
-      this.spinnerEl.instance.el.nativeElement,
+      this.spinnerEl.instance.el.nativeElement
     );
   }
 
@@ -191,7 +192,7 @@ export class IsLoadingDirective implements OnChanges, AfterViewInit, OnDestroy {
 
     this.renderer.removeChild(
       this.el.nativeElement,
-      this.spinnerEl.instance.el.nativeElement,
+      this.spinnerEl.instance.el.nativeElement
     );
 
     this.spinnerEl.destroy();
@@ -207,23 +208,18 @@ export class IsLoadingDirective implements OnChanges, AfterViewInit, OnDestroy {
       this.textValueSubscription.unsubscribe();
     }
 
-    let obs: Observable<boolean>;
-
-    if (!value) {
-      obs = this.isLoadingService.isLoading$();
-    } else {
-      obs = this.isLoadingService.isLoading$({
-        key: value,
+    this.textValueSubscription = this.isLoadingService
+      .isLoading$({
+        key: value || "default",
+      })
+      .pipe(debounceTime(10), distinctUntilChanged())
+      .subscribe((loading) => {
+        if (loading) {
+          this.startLoading();
+        } else if (this.isLoading) {
+          this.stopLoading();
+        }
       });
-    }
-
-    this.textValueSubscription = obs.subscribe(loading => {
-      if (loading) {
-        this.startLoading();
-      } else if (this.isLoading) {
-        this.stopLoading();
-      }
-    });
   }
 
   private notStringValue() {
@@ -234,14 +230,14 @@ export class IsLoadingDirective implements OnChanges, AfterViewInit, OnDestroy {
 
   private observableValue() {
     throw new TypeError(
-      'swBtnPending must be an instance of Subscription, instance of Observable given',
+      "swBtnPending must be an instance of Subscription. Instance of Observable given."
     );
   }
 
   private notObservableValue() {}
 
   private subscriptionValue(value: Subscription) {
-    this.pending = new Promise(resolve => value.add(resolve));
+    this.pending = new Promise((resolve) => value.add(resolve));
   }
 
   private notSubscriptionValue() {}
@@ -254,7 +250,7 @@ export class IsLoadingDirective implements OnChanges, AfterViewInit, OnDestroy {
 
   private booleanValue(value: boolean) {
     if (value) {
-      this.pending = new Promise(resolve => {
+      this.pending = new Promise((resolve) => {
         this.booleanValueResolveFn = resolve;
       });
     } else if (this.booleanValueResolveFn) {
@@ -272,7 +268,7 @@ export class IsLoadingDirective implements OnChanges, AfterViewInit, OnDestroy {
 }
 
 function coerceBooleanValue(val: string | boolean) {
-  if (typeof val === 'boolean') return val;
-  if (['', 'true'].includes(val)) return true;
+  if (typeof val === "boolean") return val;
+  if (["", "true"].includes(val)) return true;
   return false;
 }
