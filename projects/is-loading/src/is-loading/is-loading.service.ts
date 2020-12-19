@@ -40,15 +40,22 @@ export interface IRemoveLoadingOptions {
   key?: Key | Key[];
 }
 
-class LoadingToken<T> {
+class LoadingToken {
   constructor(
-    public value: T,
-    public isManagedByIsLoadingService: boolean,
+    public value: Subscription | Promise<unknown> | true = true,
+    public source:
+      | Subscription
+      | Promise<unknown>
+      | Observable<unknown>
+      | true = true,
     private unique?: Key
   ) {}
 
-  isSame(a: unknown, unique?: Key): boolean {
-    if (a === this.value) return true;
+  isSame(
+    a: Subscription | Promise<unknown> | Observable<unknown> | true = true,
+    unique?: Key
+  ): boolean {
+    if (a === this.source) return true;
     if (this.unique && unique && this.unique === unique) return true;
     return false;
   }
@@ -64,10 +71,7 @@ export class IsLoadingService {
   private loadingSubjects = new Map<Key, BehaviorSubject<boolean>>();
 
   // tracks how many "things" are loading for each key
-  private loadingStacks = new Map<
-    Key,
-    LoadingToken<true | Subscription | Promise<unknown>>[]
-  >();
+  private loadingStacks = new Map<Key, LoadingToken[]>();
 
   // tracks the sum of the loading indicators and subscribers for each
   // key so that unneeded keys can be deleted/garbage collected.
@@ -169,10 +173,11 @@ export class IsLoadingService {
    * @param args.key optionally specify the key to check
    */
   isLoading(args: IGetLoadingOptions = {}): boolean {
-    const key = this.normalizeKeys(args.key)[0];
-    const obs = this.loadingSubjects.get(key);
+    const keys = this.normalizeKeys(args.key);
 
-    return (obs && obs.value) || false;
+    return keys
+      .map((key) => this.loadingSubjects.get(key)?.value ?? false)
+      .some((v) => v);
   }
 
   /**
@@ -285,7 +290,7 @@ export class IsLoadingService {
     } else if (a instanceof Promise) {
       sub = a;
 
-      // If the promise is already resolved, this executes syncronously
+      // If the promise is already resolved, this executes synchronously
       sub.then(teardown, teardown);
     } else if (a instanceof Observable) {
       sub = a.pipe(take(1)).subscribe();
@@ -301,6 +306,8 @@ export class IsLoadingService {
 
     this.indexKeys(keys);
 
+    const source = a instanceof Observable ? a : sub;
+
     for (const key of keys) {
       const loadingStack = this.loadingStacks.get(key)!;
 
@@ -308,26 +315,24 @@ export class IsLoadingService {
       // loading idicators with the same "unique" value
       if (options?.unique) {
         const index = loadingStack.findIndex((t) =>
-          t.isSame(sub || true, options?.unique)
+          t.isSame(sub, options?.unique)
         );
 
         if (index >= 0) {
           const loadingToken = loadingStack.splice(index, 1)[0];
 
-          if (loadingToken.isManagedByIsLoadingService) {
+          if (loadingToken.source instanceof Observable) {
             (loadingToken.value as Subscription).unsubscribe();
           }
         }
       }
 
-      loadingStack.push(
-        new LoadingToken(sub || true, a instanceof Observable, options?.unique)
-      );
+      loadingStack.push(new LoadingToken(sub, source, options?.unique));
 
       this.updateLoadingStatus(key);
     }
 
-    return a instanceof Observable ? a : sub;
+    return source;
   }
 
   /**
@@ -387,21 +392,27 @@ export class IsLoadingService {
   remove(): void;
   remove(options: IRemoveLoadingOptions): void;
   remove(
-    sub: Subscription | Promise<unknown>,
+    sub: Subscription | Promise<unknown> | Observable<unknown>,
     options?: IRemoveLoadingOptions
   ): void;
   remove(
-    a?: Subscription | Promise<unknown> | IRemoveLoadingOptions,
+    a?:
+      | Subscription
+      | Promise<unknown>
+      | Observable<unknown>
+      | IRemoveLoadingOptions,
     b?: IRemoveLoadingOptions
   ) {
     let options = b;
-    let sub: Subscription | Promise<unknown> | undefined;
+    let sub: Subscription | Promise<unknown> | Observable<unknown> | undefined;
 
-    if (a instanceof Subscription) {
+    if (
+      a instanceof Subscription ||
+      a instanceof Promise ||
+      a instanceof Observable
+    ) {
       sub = a;
-    } else if (a instanceof Promise) {
-      sub = a;
-    } else if (a) {
+    } else {
       options = a;
     }
 
@@ -413,12 +424,12 @@ export class IsLoadingService {
       // !loadingStack means that a user has called remove() needlessly
       if (!loadingStack) continue;
 
-      const index = loadingStack.findIndex((t) => t.isSame(sub || true));
+      const index = loadingStack.findIndex((t) => t.isSame(sub));
 
       if (index >= 0) {
         const loadingToken = loadingStack.splice(index, 1)[0];
 
-        if (loadingToken.isManagedByIsLoadingService) {
+        if (sub instanceof Observable && loadingToken.source === sub) {
           (loadingToken.value as Subscription).unsubscribe();
         }
 

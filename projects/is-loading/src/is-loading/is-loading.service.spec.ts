@@ -1,11 +1,26 @@
 import { TestBed, inject } from "@angular/core/testing";
 
 import { IsLoadingService } from "./is-loading.service";
-import { BehaviorSubject, Subject, of } from "rxjs";
+import { BehaviorSubject, Subject, of, Observable } from "rxjs";
 import { skip, take, takeUntil, toArray } from "rxjs/operators";
 
 function wait(ms: number) {
   return new Promise((res) => setTimeout(res, ms));
+}
+
+function resolvablePromise() {
+  let resolveFunction: () => void;
+  let rejectFunction: () => void;
+
+  const promise = new Promise((res, rej) => {
+    resolveFunction = res;
+    rejectFunction = rej;
+  }) as Promise<unknown> & { resolve(): void; reject(): void };
+
+  promise.resolve = resolveFunction!;
+  promise.reject = rejectFunction!;
+
+  return promise;
 }
 
 describe("IsLoadingService", () => {
@@ -93,11 +108,7 @@ describe("IsLoadingService", () => {
       it("#add w/ promise", inject(
         [IsLoadingService],
         async (service: IsLoadingService) => {
-          let resolvePromise!: () => void;
-
-          const promise = new Promise((res) => {
-            resolvePromise = res;
-          });
+          const promise = resolvablePromise();
 
           service.add(promise);
 
@@ -117,7 +128,7 @@ describe("IsLoadingService", () => {
             .toPromise();
 
           // resolve promise
-          resolvePromise();
+          promise.resolve();
 
           value = await pending;
 
@@ -141,6 +152,34 @@ describe("IsLoadingService", () => {
 
           end.next();
           end.complete();
+
+          const [e1, e2, e3, e4] = await pendingEvents;
+
+          expect(e1).toBe(false);
+          expect(e2).toBe(true);
+          expect(e3).toBe(false);
+          expect(e4).toBe(undefined);
+        }
+      ));
+
+      it("add and remove w/ observable", inject(
+        [IsLoadingService],
+        async (service: IsLoadingService) => {
+          const subject = new Subject();
+
+          const pendingEvents = service
+            .isLoading$()
+            .pipe(takeUntil(subject), toArray())
+            .toPromise();
+
+          service.add(subject);
+
+          await wait(0);
+
+          service.remove(subject);
+
+          subject.next();
+          subject.complete();
 
           const [e1, e2, e3, e4] = await pendingEvents;
 
@@ -551,6 +590,61 @@ describe("IsLoadingService", () => {
             .toPromise();
 
           expect(value).toBe(false);
+        }
+      ));
+
+      it("add and remove w/ observable", inject(
+        [IsLoadingService],
+        async (service: IsLoadingService) => {
+          const subject = new Subject();
+
+          const pendingEvents1 = service
+            .isLoading$({ key: "one" })
+            .pipe(takeUntil(subject), toArray())
+            .toPromise();
+
+          const pendingEvents2 = service
+            .isLoading$({ key: "two" })
+            .pipe(takeUntil(subject), toArray())
+            .toPromise();
+
+          service.add(subject, {
+            key: ["one", "two", "three"],
+          });
+
+          expect(service.isLoading({ key: ["one", "three"] })).toBe(true);
+
+          service.remove(subject, {
+            key: ["one", "three"],
+          });
+
+          expect(service.isLoading({ key: ["one", "three"] })).toBe(false);
+          expect(service.isLoading({ key: ["two", "three"] })).toBe(true);
+
+          service.remove(subject, {
+            key: "two",
+          });
+
+          expect(service.isLoading({ key: ["two", "three"] })).toBe(false);
+
+          await wait(0);
+
+          subject.next();
+          subject.complete();
+
+          const [e1, e2, e3, e4] = await pendingEvents1;
+
+          expect(e1).toBe(false);
+          expect(e2).toBe(true);
+          expect(e3).toBe(false);
+          expect(e4).toBe(undefined);
+
+          const [a1, a2, a3, a4] = await pendingEvents2;
+
+          expect(a1).toBe(false);
+          expect(a2).toBe(true);
+          expect(a3).toBe(false);
+          expect(a4).toBe(undefined);
         }
       ));
     });
