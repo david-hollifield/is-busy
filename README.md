@@ -168,7 +168,7 @@ class IsLoadingService {
   remove(): void;
   remove(options: IRemoveLoadingOptions): void;
   remove(
-    sub: Subscription | Promise<unknown>,
+    sub: Subscription | Promise<unknown> | Observable<unknown>,
     options?: IRemoveLoadingOptions
   ): void;
 }
