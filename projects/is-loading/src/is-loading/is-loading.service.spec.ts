@@ -613,6 +613,7 @@ describe("IsLoadingService", () => {
           });
 
           expect(service.isLoading({ key: ["one", "three"] })).toBe(true);
+          expect(service.isLoading({ key: ["two", "three"] })).toBe(true);
 
           service.remove(subject, {
             key: ["one", "three"],
@@ -621,9 +622,7 @@ describe("IsLoadingService", () => {
           expect(service.isLoading({ key: ["one", "three"] })).toBe(false);
           expect(service.isLoading({ key: ["two", "three"] })).toBe(true);
 
-          service.remove(subject, {
-            key: "two",
-          });
+          service.remove(subject, { key: "two" });
 
           expect(service.isLoading({ key: ["two", "three"] })).toBe(false);
 
@@ -956,11 +955,7 @@ describe("IsLoadingService", () => {
     async (service: IsLoadingService) => {
       const key = Symbol("key");
 
-      let resolve: () => void;
-
-      const promise = new Promise((res) => {
-        resolve = res;
-      });
+      const promise = resolvablePromise();
 
       service.add(promise, { key });
 
@@ -992,7 +987,7 @@ describe("IsLoadingService", () => {
       expect(service["loadingSubjects"].size).toBe(1);
       expect(service["loadingStacks"].size).toBe(1);
 
-      resolve!();
+      promise.resolve();
 
       await promise;
 

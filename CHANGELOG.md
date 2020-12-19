@@ -4,6 +4,10 @@
 
 - none
 
+### 5.1.1 // 2020-12-18
+
+- [FIX] Bug when calling `IsLoadingService#remove(Observable)` with an observable argument.
+
 ### 5.1.0 // 2020-12-18
 
 - [FEATURE] Ability to remove a loading indicator added via `IsLoadingService#add(Observable)`. This also unsubscribes from the `take(1)` subscription that was created when calling `IsLoadingService#add(Observable)`.

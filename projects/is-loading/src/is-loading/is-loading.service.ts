@@ -55,7 +55,7 @@ class LoadingToken {
     a: Subscription | Promise<unknown> | Observable<unknown> | true = true,
     unique?: Key
   ): boolean {
-    if (a === this.source) return true;
+    if (a === this.source || a === this.value) return true;
     if (this.unique && unique && this.unique === unique) return true;
     return false;
   }
@@ -274,41 +274,62 @@ export class IsLoadingService {
     options?: IAddLoadingOptions
   ): T;
   add(
-    a?: Subscription | Promise<unknown> | IAddLoadingOptions,
+    a?:
+      | Subscription
+      | Promise<unknown>
+      | Observable<unknown>
+      | IAddLoadingOptions,
     b?: IAddLoadingOptions
   ) {
-    let options = b;
-    let sub: Subscription | Promise<unknown> | undefined;
-    const teardown = () => this.remove(sub!, options);
+    const options =
+      b ||
+      (!(
+        a instanceof Promise ||
+        a instanceof Subscription ||
+        a instanceof Observable
+      ) &&
+        a) ||
+      undefined;
 
-    if (a instanceof Subscription) {
-      sub = a;
+    let subs: Array<Subscription | Promise<unknown>> | undefined;
+    let source:
+      | Subscription
+      | Promise<unknown>
+      | Observable<unknown>
+      | undefined;
 
-      if (sub.closed) return a;
-
-      sub.add(teardown);
-    } else if (a instanceof Promise) {
-      sub = a;
-
-      // If the promise is already resolved, this executes synchronously
-      sub.then(teardown, teardown);
-    } else if (a instanceof Observable) {
-      sub = a.pipe(take(1)).subscribe();
-
-      if (sub.closed) return a;
-
-      sub.add(teardown);
-    } else if (a) {
-      options = a;
-    }
+    const teardown = (s: Subscription | Promise<unknown>) => () =>
+      this.remove(s, options);
 
     const keys = this.normalizeKeys(options?.key);
 
+    if (a instanceof Subscription || a instanceof Observable) {
+      source = a;
+      subs =
+        a instanceof Observable
+          ? keys.map(() => a.pipe(take(1)).subscribe())
+          : keys.map(() => a);
+
+      if ((subs[0] as Subscription).closed) return a;
+
+      subs.forEach((s) => (s as Subscription).add(teardown(s)));
+    } else if (a instanceof Promise) {
+      source = a;
+      // important for `subs` to contain the original promise and not a new
+      // promise created by `Promise#then()`. Hence the separate `forEach`
+      // call below
+      subs = keys.map(() => a);
+      // Unfortunately, if the promise is already resolved,
+      // this still executes asynchronously. There is no way around this.
+      subs.forEach((s) =>
+        (s as Promise<unknown>).then(teardown(a), teardown(a))
+      );
+    }
+
     this.indexKeys(keys);
 
-    const source = a instanceof Observable ? a : sub;
-
-    for (const key of keys) {
+    keys.forEach((key, keyIndex) => {
+      const sub = subs && subs[keyIndex];
       const loadingStack = this.loadingStacks.get(key)!;
 
       // if the "unique" option is present, remove any existing
@@ -327,10 +348,16 @@ export class IsLoadingService {
         }
       }
 
-      loadingStack.push(new LoadingToken(sub, source, options?.unique));
+      loadingStack.push(
+        new LoadingToken(
+          sub,
+          a instanceof Observable ? a : sub,
+          options?.unique
+        )
+      );
 
       this.updateLoadingStatus(key);
-    }
+    });
 
     return source;
   }
@@ -426,17 +453,17 @@ export class IsLoadingService {
 
       const index = loadingStack.findIndex((t) => t.isSame(sub));
 
-      if (index >= 0) {
-        const loadingToken = loadingStack.splice(index, 1)[0];
+      if (index < 0) continue;
 
-        if (sub instanceof Observable && loadingToken.source === sub) {
-          (loadingToken.value as Subscription).unsubscribe();
-        }
+      const loadingToken = loadingStack.splice(index, 1)[0];
 
-        this.updateLoadingStatus(key);
-
-        this.deIndexKey(key);
+      if (sub instanceof Observable && loadingToken.source === sub) {
+        (loadingToken.value as Subscription).unsubscribe();
       }
+
+      this.updateLoadingStatus(key);
+
+      this.deIndexKey(key);
     }
   }
 
