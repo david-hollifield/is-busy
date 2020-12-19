@@ -24,7 +24,7 @@
     "lint": "ng lint",
     "e2e": "ng e2e",
     "pubcanary": "yarn test && yarn lerna version --preid next && yarn build && yarn lerna publish from-git --yes --contents build",
-    "pub": "yarn test && yarn version && yarn build --prod && yarn publish dist/is-loading --non-interactive"
+    "pub": "yarn test && yarn lerna version && yarn build --prod && yarn lerna publish from-git --yes --contents build"
   },
   "devDependencies": {
     "@angular-builders/jest": "^10.0.1",
