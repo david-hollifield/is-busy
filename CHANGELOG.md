@@ -2,6 +2,13 @@
 
 ### Unreleased
 
+- none
+
+### 5.1.0 // 2020-12-18
+
+- [FEATURE] Ability to remove a loading indicator added via `IsLoadingService#add(Observable)`. This also unsubscribes from the `take(1)` subscription that was created when calling `IsLoadingService#add(Observable)`.
+- [FIX] Calling `IsLoadingService#isLoading()` with an array of keys now behaves as expected.
+
 ### 5.0.0 / 2020-12-18
 
 - [BREAKING] Remove `debounceTime()` from `IsLoadingService#isLoading$()`. I added it a long time ago as part of an effort to address some "changed after checked" errors I was running into. It was always unclear to me if it was necessary or if something else I did fixed the problem. Regardless, it doesn't currently appear to be necessary and it may be surprising to users who expect `IsLoadingService#isLoading$()` to emit synchronously. While this is technically a breaking change (hence the major version bump), I highly doubt this will impact most (any?) users.
