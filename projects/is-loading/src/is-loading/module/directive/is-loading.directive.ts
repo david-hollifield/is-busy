@@ -87,20 +87,13 @@ export class IsLoadingDirective implements OnChanges, AfterViewInit, OnDestroy {
 
   private spinnerEl?: ComponentRef<IsLoadingSpinnerComponent>;
 
-  private config: ISWIsLoadingDirectiveConfig = {};
+  private config: ISWIsLoadingDirectiveConfig;
 
-  private _swIsLoadingDisableEl =
-    this.config.disableEl === undefined ? true : this.config.disableEl;
+  private _swIsLoadingDisableEl: boolean;
 
-  private _swIsLoadingSpinner =
-    this.config.addSpinnerEl !== undefined
-      ? this.config.addSpinnerEl
-      : this.el.nativeElement instanceof HTMLButtonElement ||
-        this.el.nativeElement instanceof HTMLAnchorElement;
+  private _swIsLoadingSpinner: boolean;
 
-  private loadingClass = this.config.loadingClass
-    ? this.config.loadingClass
-    : "sw-is-loading";
+  private loadingClass: string;
 
   private set pending(value: Promise<unknown>) {
     this.startLoading();
@@ -121,6 +114,19 @@ export class IsLoadingDirective implements OnChanges, AfterViewInit, OnDestroy {
     private injector: Injector
   ) {
     this.config = config || {};
+
+    this._swIsLoadingDisableEl =
+      this.config.disableEl === undefined ? true : this.config.disableEl;
+
+    this._swIsLoadingSpinner =
+      this.config.addSpinnerEl !== undefined
+        ? this.config.addSpinnerEl
+        : this.el.nativeElement instanceof HTMLButtonElement ||
+          this.el.nativeElement instanceof HTMLAnchorElement;
+
+    this.loadingClass = this.config.loadingClass
+      ? this.config.loadingClass
+      : "sw-is-loading";
   }
 
   ngOnChanges(changes: {
