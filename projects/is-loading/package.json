@@ -22,7 +22,7 @@
     "tslib": "^2.0.0"
   },
   "peerDependencies": {
-    "@angular/core": "8 || 9 || 10 || 11",
+    "@angular/core": "8 || 9 || 10 || 11 || 12",
     "rxjs": "^6.0.0"
   }
 }
