@@ -4,6 +4,10 @@
 
 - none
 
+### 5.2.0 // 2021-5-17
+
+- [FEATURE] Angular 12 support.
+
 ### 5.1.1 // 2020-12-18
 
 - [FIX] Bug when calling `IsLoadingService#remove(Observable)` with an observable argument.
