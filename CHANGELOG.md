@@ -4,6 +4,10 @@
 
 - none
 
+### 5.3.0 // 2021-11-4
+
+- [FEATURE] Angular 13 support.
+
 ### 5.2.0 // 2021-5-17
 
 - [FEATURE] Angular 12 support.
