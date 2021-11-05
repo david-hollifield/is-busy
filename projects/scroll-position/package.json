@@ -1,6 +1,6 @@
 {
   "name": "@service-work/scroll-position",
-  "version": "5.2.0",
+  "version": "5.3.0",
   "description": "A simple service to save & refresh scroll position on navigation for Angular apps.",
   "author": "John Carroll <john.carroll.p@gmail.com>",
   "homepage": "https://gitlab.com/service-work/is-loading",
@@ -23,8 +23,8 @@
     "tslib": "^2.0.0"
   },
   "peerDependencies": {
-    "@angular/core": "8 || 9 || 10 || 11 || 12",
-    "@angular/router": "8 || 9 || 10 || 11 || 12",
+    "@angular/core": "8 || 9 || 10 || 11 || 12 || 13",
+    "@angular/router": "8 || 9 || 10 || 11 || 12 || 13",
     "@service-work/is-loading": "^5.0.0",
     "rxjs": "^6.0.0"
   }
