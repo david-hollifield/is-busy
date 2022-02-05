@@ -9,7 +9,7 @@ function wait(ms: number) {
 }
 
 function resolvablePromise() {
-  let resolveFunction: () => void;
+  let resolveFunction: (value?: unknown) => void;
   let rejectFunction: () => void;
 
   const promise = new Promise((res, rej) => {
@@ -332,7 +332,7 @@ describe("IsLoadingService", () => {
       it("#add w/ promise", inject(
         [IsLoadingService],
         async (service: IsLoadingService) => {
-          let resolvePromise!: () => void;
+          let resolvePromise!: (value?: unknown) => void;
 
           const promise = new Promise((res) => {
             resolvePromise = res;

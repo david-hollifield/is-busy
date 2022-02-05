@@ -13,29 +13,26 @@
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "tsConfig": "projects/is-loading/tsconfig.lib.json",
-            "project": "projects/is-loading/ng-package.json"
+            "tsConfig": "tsconfig.lib.json",
+            "project": "ng-package.json"
           },
           "configurations": {
             "production": {
-              "project": "projects/is-loading/ng-package.prod.json",
-              "tsConfig": "projects/is-loading/tsconfig.lib.prod.json"
+              "project": "ng-package.prod.json",
+              "tsConfig": "tsconfig.lib.prod.json"
             }
           }
         },
         "test": {
           "builder": "@angular-builders/jest:run",
           "options": {
-            "tsConfig": "projects/is-loading/tsconfig.spec.json"
+            "tsConfig": "tsconfig.spec.json"
           }
         },
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "tsConfig": [
-              "projects/is-loading/tsconfig.lib.json",
-              "projects/is-loading/tsconfig.spec.json"
-            ],
+            "tsConfig": ["tsconfig.lib.json", "tsconfig.spec.json"],
             "exclude": ["**/node_modules/**"]
           }
         }
@@ -50,28 +47,25 @@
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "tsConfig": "projects/scroll-position/tsconfig.lib.json",
-            "project": "projects/scroll-position/ng-package.json"
+            "tsConfig": "tsconfig.lib.json",
+            "project": "ng-package.json"
           },
           "configurations": {
             "production": {
-              "tsConfig": "projects/scroll-position/tsconfig.lib.prod.json"
+              "tsConfig": "tsconfig.lib.prod.json"
             }
           }
         },
         "test": {
           "builder": "@angular-builders/jest:run",
           "options": {
-            "tsConfig": "projects/scroll-position/tsconfig.spec.json"
+            "tsConfig": "tsconfig.spec.json"
           }
         },
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "tsConfig": [
-              "projects/scroll-position/tsconfig.lib.json",
-              "projects/scroll-position/tsconfig.spec.json"
-            ],
+            "tsConfig": ["tsconfig.lib.json", "tsconfig.spec.json"],
             "exclude": ["**/node_modules/**"]
           }
         }

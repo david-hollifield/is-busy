@@ -101,7 +101,7 @@ export class IsLoadingDirective implements OnChanges, AfterViewInit, OnDestroy {
   }
 
   private textValueSubscription?: Subscription;
-  private booleanValueResolveFn?: () => void;
+  private booleanValueResolveFn?: (value?: unknown) => void;
 
   constructor(
     @Optional()
