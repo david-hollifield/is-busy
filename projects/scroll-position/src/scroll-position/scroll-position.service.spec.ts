@@ -20,14 +20,15 @@ function configureTestingModule(args: { providers?: any[] } = {}) {
   return TestBed.configureTestingModule({
     imports: [RouterModule.forRoot([])],
     providers: [
-      ScrollPositionService,
-      {
-        provide: APP_BASE_HREF,
-        useValue: "http://localhost",
-      },
-      ...(args.providers || []),
+        ScrollPositionService,
+        {
+            provide: APP_BASE_HREF,
+            useValue: "http://localhost",
+        },
+        ...(args.providers || []),
     ],
-  });
+    teardown: { destroyAfterEach: false }
+});
 }
 
 describe("ScrollPositionService", () => {

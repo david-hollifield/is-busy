@@ -57,9 +57,10 @@ describe("IsLoadingDirective", () => {
 
   beforeEach(async () => {
     const testingModule = TestBed.configureTestingModule({
-      imports: [IsLoadingDirectiveModule],
-      declarations: [TestComponent],
-    });
+    imports: [IsLoadingDirectiveModule],
+    declarations: [TestComponent],
+    teardown: { destroyAfterEach: false }
+});
 
     await testingModule.compileComponents();
 
@@ -261,9 +262,10 @@ describe("IsLoadingDirective Config", () => {
 
   beforeEach(async () => {
     const testingModule = TestBed.configureTestingModule({
-      imports: [IsLoadingDirectiveModule],
-      declarations: [TestConfigComponent],
-    });
+    imports: [IsLoadingDirectiveModule],
+    declarations: [TestConfigComponent],
+    teardown: { destroyAfterEach: false }
+});
 
     await testingModule.compileComponents();
 
