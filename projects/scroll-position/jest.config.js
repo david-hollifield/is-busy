@@ -1,10 +1,10 @@
-const baseConfig = require('../../jest.config');
+const baseConfig = require("../../jest.config");
 
 module.exports = {
   ...baseConfig,
   globals: {
-    'ts-jest': {
-      tsConfig: '<rootDir>/projects/scroll-position/tsconfig.spec.json',
+    "ts-jest": {
+      tsconfig: "<rootDir>/projects/scroll-position/tsconfig.spec.json",
     },
   },
 };

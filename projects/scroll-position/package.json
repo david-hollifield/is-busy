@@ -23,9 +23,11 @@
     "tslib": "^2.0.0"
   },
   "peerDependencies": {
-    "@angular/core": "8 || 9 || 10 || 11 || 12 || 13",
-    "@angular/router": "8 || 9 || 10 || 11 || 12 || 13",
-    "@service-work/is-loading": "^5.0.0",
-    "rxjs": "^6.0.0"
-  }
+    "@angular/core": "13",
+    "@angular/router": "13",
+    "@service-work/is-loading": "^6.0.0",
+    "rxjs": "^6.0.0 || ^7.0.0"
+  },
+  "typings": "src/public-api.ts",
+  "module": "src/public-api.ts"
 }

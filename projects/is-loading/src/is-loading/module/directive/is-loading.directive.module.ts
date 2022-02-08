@@ -1,6 +1,6 @@
-import { NgModule } from '@angular/core';
-import { IsLoadingSpinnerComponent } from './is-loading-spinner.component';
-import { IsLoadingDirective } from './is-loading.directive';
+import { NgModule } from "@angular/core";
+import { IsLoadingSpinnerComponent } from "./is-loading-spinner.component";
+import { IsLoadingDirective } from "./is-loading.directive";
 
 @NgModule({
   declarations: [IsLoadingDirective, IsLoadingSpinnerComponent],

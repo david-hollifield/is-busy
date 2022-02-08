@@ -14,9 +14,10 @@ describe('IsLoadingPipe', () => {
 
   beforeEach(() => {
     const testingModule = TestBed.configureTestingModule({
-      imports: [IsLoadingPipeModule],
-      declarations: [],
-    });
+    imports: [IsLoadingPipeModule],
+    declarations: [],
+    teardown: { destroyAfterEach: false }
+});
 
     isLoadingService = testingModule.get(IsLoadingService);
     pipe = new IsLoadingPipe(isLoadingService);

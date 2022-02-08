@@ -26,9 +26,10 @@ function resolvablePromise() {
 describe("IsLoadingService", () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [],
-      providers: [IsLoadingService],
-    });
+    imports: [],
+    providers: [IsLoadingService],
+    teardown: { destroyAfterEach: false }
+});
   });
 
   it("should be created", inject(
