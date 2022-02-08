@@ -1,29 +1,29 @@
-import { IsLoadingPipe } from './is-loading.pipe';
-import { TestBed } from '@angular/core/testing';
-import { IsLoadingPipeModule } from './is-loading.pipe.module';
-import { IsLoadingService } from '../../is-loading.service';
-import { take } from 'rxjs/operators';
+import { IsLoadingPipe } from "./is-loading.pipe";
+import { TestBed } from "@angular/core/testing";
+import { IsLoadingPipeModule } from "./is-loading.pipe.module";
+import { IsLoadingService } from "../../is-loading.service";
+import { take } from "rxjs/operators"; // continue to use this entrypoint for rxjs v6 support
 
-describe('IsLoadingPipe', () => {
+describe("IsLoadingPipe", () => {
   let isLoadingService: IsLoadingService;
   let pipe: IsLoadingPipe;
 
   async function wait(ms: number) {
-    await new Promise(res => setTimeout(res, ms));
+    await new Promise((res) => setTimeout(res, ms));
   }
 
   beforeEach(() => {
     const testingModule = TestBed.configureTestingModule({
-    imports: [IsLoadingPipeModule],
-    declarations: [],
-    teardown: { destroyAfterEach: false }
-});
+      imports: [IsLoadingPipeModule],
+      declarations: [],
+      teardown: { destroyAfterEach: false },
+    });
 
     isLoadingService = testingModule.get(IsLoadingService);
     pipe = new IsLoadingPipe(isLoadingService);
   });
 
-  it('create an instance', () => {
+  it("create an instance", () => {
     expect(pipe).toBeTruthy();
   });
 
@@ -34,22 +34,16 @@ describe('IsLoadingPipe', () => {
 
     await wait(50);
 
-    result = await pipe
-      .transform('default')
-      .pipe(take(1))
-      .toPromise();
+    result = await pipe.transform("default").pipe(take(1)).toPromise();
 
     expect(result).toBe(true);
 
     isLoadingService.remove();
-    isLoadingService.add({ key: 'button' }); // this should be ignored
+    isLoadingService.add({ key: "button" }); // this should be ignored
 
     await wait(50);
 
-    result = await pipe
-      .transform('default')
-      .pipe(take(1))
-      .toPromise();
+    result = await pipe.transform("default").pipe(take(1)).toPromise();
 
     expect(result).toBe(false);
   });
@@ -57,31 +51,25 @@ describe('IsLoadingPipe', () => {
   it('should work when argument is "button"', async () => {
     let result: boolean | undefined;
 
-    isLoadingService.add({ key: 'button' });
+    isLoadingService.add({ key: "button" });
 
     await wait(50);
 
-    result = await pipe
-      .transform('button')
-      .pipe(take(1))
-      .toPromise();
+    result = await pipe.transform("button").pipe(take(1)).toPromise();
 
     expect(result).toBe(true);
 
-    isLoadingService.remove({ key: 'button' });
+    isLoadingService.remove({ key: "button" });
     isLoadingService.add(); // this should be ignored
 
     await wait(50);
 
-    result = await pipe
-      .transform('button')
-      .pipe(take(1))
-      .toPromise();
+    result = await pipe.transform("button").pipe(take(1)).toPromise();
 
     expect(result).toBe(false);
   });
 
-  it('should work when argument is an object', async () => {
+  it("should work when argument is an object", async () => {
     let result: boolean | undefined;
     const key = {};
 
@@ -89,10 +77,7 @@ describe('IsLoadingPipe', () => {
 
     await wait(50);
 
-    result = await pipe
-      .transform(key)
-      .pipe(take(1))
-      .toPromise();
+    result = await pipe.transform(key).pipe(take(1)).toPromise();
 
     expect(result).toBe(true);
 
@@ -101,10 +86,7 @@ describe('IsLoadingPipe', () => {
 
     await wait(50);
 
-    result = await pipe
-      .transform(key)
-      .pipe(take(1))
-      .toPromise();
+    result = await pipe.transform(key).pipe(take(1)).toPromise();
 
     expect(result).toBe(false);
   });

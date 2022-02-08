@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { BehaviorSubject, Subscription, Observable, combineLatest } from "rxjs";
-import { distinctUntilChanged, take, map } from "rxjs/operators";
+import { distinctUntilChanged, take, map } from "rxjs/operators"; // continue to use this entrypoint for rxjs v6 support
 
 export type Key = string | object | symbol;
 

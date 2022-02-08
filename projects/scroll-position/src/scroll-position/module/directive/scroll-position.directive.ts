@@ -7,7 +7,7 @@ import {
 } from "@angular/core";
 import { ResolveEnd, Router } from "@angular/router";
 import { Subscription } from "rxjs";
-import { delay, filter, take } from "rxjs/operators";
+import { delay, filter, take } from "rxjs/operators"; // continue to use this entrypoint for rxjs v6 support
 import { IsLoadingService } from "@service-work/is-loading";
 import { ScrollPositionService } from "../../scroll-position.service";
 

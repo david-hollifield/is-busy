@@ -14,7 +14,7 @@ import {
   Optional,
 } from "@angular/core";
 import { Observable, Subscription } from "rxjs";
-import { debounceTime, distinctUntilChanged } from "rxjs/operators";
+import { debounceTime, distinctUntilChanged } from "rxjs/operators"; // continue to use this entrypoint for rxjs v6 support
 import { IsLoadingService } from "../../is-loading.service";
 import { IsLoadingSpinnerComponent } from "./is-loading-spinner.component";
 import {
@@ -243,7 +243,7 @@ export class IsLoadingDirective implements OnChanges, AfterViewInit, OnDestroy {
   private notObservableValue() {}
 
   private subscriptionValue(value: Subscription) {
-    this.pending = new Promise((resolve) => value.add(resolve));
+    this.pending = new Promise((resolve) => value.add(resolve as () => void));
   }
 
   private notSubscriptionValue() {}
