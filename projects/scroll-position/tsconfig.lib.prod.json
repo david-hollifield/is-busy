@@ -2,9 +2,17 @@
 {
   "extends": "./tsconfig.lib.json",
   "compilerOptions": {
-    "declarationMap": false
+    "declarationMap": false,
+    "paths": {
+      // This is necessary to make the scroll-position package build without error.
+      // Because I don't want to import from the built version of is-loading in development
+      // (I want the typings in the IDE to come from the source), I only want to use this
+      // path mapping in the prod version of the tsconfig. This means that `yarn build`
+      // will only work with the prod configuration.
+      "@service-work/is-loading": ["projects/is-loading/build"]
+    }
   },
   "angularCompilerOptions": {
-    "enableIvy": false
+    "compilationMode": "partial"
   }
 }

@@ -20,14 +20,15 @@ function configureTestingModule(args: { providers?: any[] } = {}) {
   return TestBed.configureTestingModule({
     imports: [RouterModule.forRoot([])],
     providers: [
-      ScrollPositionService,
-      {
-        provide: APP_BASE_HREF,
-        useValue: "http://localhost",
-      },
-      ...(args.providers || []),
+        ScrollPositionService,
+        {
+            provide: APP_BASE_HREF,
+            useValue: "http://localhost",
+        },
+        ...(args.providers || []),
     ],
-  });
+    teardown: { destroyAfterEach: false }
+});
 }
 
 describe("ScrollPositionService", () => {
@@ -69,13 +70,13 @@ describe("ScrollPositionService", () => {
 
   describe("getPositionKey", () => {
     swTest("one key", (_service) => {
-      const service = (_service as unknown) as IGetPositionKey;
+      const service = _service as unknown as IGetPositionKey;
 
       expect(service.getPositionKey("one")).toEqual(`one::${TEST_ROUTER_URL}`);
     });
 
     swTest("three keys", (_service) => {
-      const service = (_service as unknown) as IGetPositionKey;
+      const service = _service as unknown as IGetPositionKey;
 
       expect(service.getPositionKey(["one", "two", "three"])).toEqual(
         `one::three::two::${TEST_ROUTER_URL}`

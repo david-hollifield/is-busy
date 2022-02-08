@@ -3,7 +3,7 @@ stages:
   - test
 
 build:
-  image: node:12.16.3-alpine
+  image: node:12.22.10-alpine
   stage: build
   cache:
     untracked: true
@@ -12,7 +12,7 @@ build:
     - yarn install
 
 test:
-  image: node:12.16.3-alpine
+  image: node:12.22.10-alpine
   stage: test
   cache:
     untracked: true

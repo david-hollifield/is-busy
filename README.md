@@ -418,8 +418,9 @@ interface IScrollPositionServiceConfig {
 
 ## Compatibility
 
-- Version 3 of this library is compatible with Angular v7+.
-- Version 4+ of this library is compatible with Angular v8+.
+- v3.x is compatible with Angular 7-13 and rxjs v6.
+- v4.x and v5.x are compatible with Angular 8-13 and rxjs v6.
+- v6+ is compatible with Angular 13+ and rxjs v6 or v7.
 
 ## About
 

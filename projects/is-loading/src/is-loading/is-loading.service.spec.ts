@@ -2,14 +2,14 @@ import { TestBed, inject } from "@angular/core/testing";
 
 import { IsLoadingService } from "./is-loading.service";
 import { BehaviorSubject, Subject, of, Observable } from "rxjs";
-import { skip, take, takeUntil, toArray } from "rxjs/operators";
+import { skip, take, takeUntil, toArray } from "rxjs/operators"; // continue to use this entrypoint for rxjs v6 support
 
 function wait(ms: number) {
   return new Promise((res) => setTimeout(res, ms));
 }
 
 function resolvablePromise() {
-  let resolveFunction: () => void;
+  let resolveFunction: (value?: unknown) => void;
   let rejectFunction: () => void;
 
   const promise = new Promise((res, rej) => {
@@ -28,6 +28,7 @@ describe("IsLoadingService", () => {
     TestBed.configureTestingModule({
       imports: [],
       providers: [IsLoadingService],
+      teardown: { destroyAfterEach: false },
     });
   });
 
@@ -138,12 +139,12 @@ describe("IsLoadingService", () => {
 
           expect(value).toBe(false);
 
-          const end = new Subject();
+          const end = new Subject<void>();
 
           const pendingEvents = service
             .isLoading$()
             .pipe(takeUntil(end), toArray())
-            .toPromise();
+            .toPromise() as Promise<Array<boolean | undefined>>;
 
           // Test adding promise which has already resolved
           service.add(promise);
@@ -165,12 +166,12 @@ describe("IsLoadingService", () => {
       it("add and remove w/ observable", inject(
         [IsLoadingService],
         async (service: IsLoadingService) => {
-          const subject = new Subject();
+          const subject = new Subject<void>();
 
           const pendingEvents = service
             .isLoading$()
             .pipe(takeUntil(subject), toArray())
-            .toPromise();
+            .toPromise() as Promise<Array<boolean | undefined>>;
 
           service.add(subject);
 
@@ -207,7 +208,7 @@ describe("IsLoadingService", () => {
       it("#isLoading$ simple", inject(
         [IsLoadingService],
         async (service: IsLoadingService) => {
-          let value = true;
+          let value: boolean | undefined = true;
 
           value = await service
             .isLoading$({ key: IsLoadingService })
@@ -221,7 +222,7 @@ describe("IsLoadingService", () => {
       it("#add & #remove", inject(
         [IsLoadingService],
         async (service: IsLoadingService) => {
-          let value = false;
+          let value: boolean | undefined = false;
 
           service.add({ key: IsLoadingService });
 
@@ -280,7 +281,7 @@ describe("IsLoadingService", () => {
       it("#add w/ subscription", inject(
         [IsLoadingService],
         async (service: IsLoadingService) => {
-          let value = false;
+          let value: boolean | undefined = false;
 
           const subject = new BehaviorSubject(true);
 
@@ -332,13 +333,13 @@ describe("IsLoadingService", () => {
       it("#add w/ promise", inject(
         [IsLoadingService],
         async (service: IsLoadingService) => {
-          let resolvePromise!: () => void;
+          let resolvePromise!: (value?: unknown) => void;
 
           const promise = new Promise((res) => {
             resolvePromise = res;
           });
 
-          let value = false;
+          let value: boolean | undefined = false;
 
           service.add(promise, { key: IsLoadingService });
 
@@ -438,7 +439,7 @@ describe("IsLoadingService", () => {
       it("#add & #remove", inject(
         [IsLoadingService],
         async (service: IsLoadingService) => {
-          let value = false;
+          let value: boolean | undefined = false;
 
           service.add({ key: [IsLoadingService, "default"] });
 
@@ -525,7 +526,7 @@ describe("IsLoadingService", () => {
       it("isLoading$()", inject(
         [IsLoadingService],
         async (service: IsLoadingService) => {
-          let value = false;
+          let value: boolean | undefined = false;
 
           service.add({ key: [IsLoadingService, "default"] });
 
@@ -596,17 +597,17 @@ describe("IsLoadingService", () => {
       it("add and remove w/ observable", inject(
         [IsLoadingService],
         async (service: IsLoadingService) => {
-          const subject = new Subject();
+          const subject = new Subject<void>();
 
           const pendingEvents1 = service
             .isLoading$({ key: "one" })
             .pipe(takeUntil(subject), toArray())
-            .toPromise();
+            .toPromise() as Promise<Array<boolean | undefined>>;
 
           const pendingEvents2 = service
             .isLoading$({ key: "two" })
             .pipe(takeUntil(subject), toArray())
-            .toPromise();
+            .toPromise() as Promise<Array<boolean | undefined>>;
 
           service.add(subject, {
             key: ["one", "two", "three"],
@@ -652,7 +653,7 @@ describe("IsLoadingService", () => {
       it("#add & #remove", inject(
         [IsLoadingService],
         async (service: IsLoadingService) => {
-          let value = false;
+          let value: boolean | undefined = false;
 
           service.add({ unique: IsLoadingService });
 
@@ -775,7 +776,7 @@ describe("IsLoadingService", () => {
       it("#add w/ promise", inject(
         [IsLoadingService],
         async (service: IsLoadingService) => {
-          const resolvePromise = new Subject();
+          const resolvePromise = new Subject<void>();
 
           const promise = new Promise((resolve, reject) => {
             resolvePromise.subscribe(() => {
@@ -872,7 +873,7 @@ describe("IsLoadingService", () => {
       it("#add w/ promise", inject(
         [IsLoadingService],
         async (service: IsLoadingService) => {
-          const resolvePromise = new Subject();
+          const resolvePromise = new Subject<void>();
 
           const promise = new Promise((resolve, reject) => {
             resolvePromise.subscribe(() => {

@@ -4,6 +4,10 @@
 
 - none
 
+### 6.0.0 // 2022-2-7
+
+- [BREAKING] rxjs v6/7 support. Version 6.0 of the is-loading and scroll-position packages support using either rxjs v6 or v7. This also required upgrading to Angular v13 for building and testing the library, which means that the minimum supported Angular version is now also v13 (Angular applications only support importing library's built with equal or older Angular versions).
+
 ### 5.3.0 // 2021-11-4
 
 - [FEATURE] Angular 13 support.
