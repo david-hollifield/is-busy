@@ -4,6 +4,15 @@
 
 - none
 
+### 6.1.1 // 2022-6-9
+
+- [FIX] Undid the "fix" in `6.1.0` for the `setAttribute("disabled, ` call since I realized the previous format was fine. The problem is that MatButton is not longer styled by the disabled attribute, instead it is styled by the addition of a `mat-button-disabled` class that is applied by MatButton. Apparently, marking the underlying button as disabled doesn't apply this class.
+
+### 6.1.0 // 2022-6-9
+
+- [FEATURE] Angular 14 support.
+- [FIX] At some point in the past, an Angular update broke the `setAttribute` call that the IsLoading directive uses to mark an element as disabled. This fixes that.
+
 ### 6.0.0 // 2022-2-7
 
 - [BREAKING] rxjs v6/7 support. Version 6.0 of the is-loading and scroll-position packages support using either rxjs v6 or v7. This also required upgrading to Angular v13 for building and testing the library, which means that the minimum supported Angular version is now also v13 (Angular applications only support importing library's built with equal or older Angular versions).

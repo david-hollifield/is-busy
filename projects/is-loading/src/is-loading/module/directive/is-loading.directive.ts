@@ -165,7 +165,7 @@ export class IsLoadingDirective implements OnChanges, AfterViewInit, OnDestroy {
   private startLoading() {
     this.renderer.addClass(this.el.nativeElement, this.loadingClass);
     if (this.swIsLoadingDisableEl) {
-      this.renderer.setAttribute(this.el.nativeElement, "disabled", "true");
+      this.renderer.setAttribute(this.el.nativeElement, "disabled", "disabled");
     }
     this._isLoading = true;
   }
