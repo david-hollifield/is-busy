@@ -4,6 +4,10 @@
 
 - none
 
+### 6.2.0 // 2022-6-9
+
+- [FEATURE] Add `IsLoadingService#clear()` method for clearing the loading status of a given key or keys.
+
 ### 6.1.1 // 2022-6-9
 
 - [FIX] Undid the "fix" in `6.1.0` for the `setAttribute("disabled, ` call since I realized the previous format was fine. The problem is that MatButton is not longer styled by the disabled attribute, instead it is styled by the addition of a `mat-button-disabled` class that is applied by MatButton. Apparently, marking the underlying button as disabled doesn't apply this class.

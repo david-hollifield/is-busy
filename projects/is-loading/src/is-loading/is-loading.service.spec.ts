@@ -400,39 +400,6 @@ describe("IsLoadingService", () => {
           expect(value).toBe(false);
         }
       ));
-
-      // it('#isLoading$ observable', async(inject([IsLoadingService], (service: IsLoadingService) => {
-      //   new Promise((resolve, reject) => {
-      //     let countKey=0
-      //     let countDefault=0
-
-      //     service.isLoading$({key: IsLoadingService}).subscribe(value => {
-      //       countKey++
-
-      //       if (countKey % 2 === 0) {
-      //         expect(value).toBe(false)
-      //       }
-      //       else {
-      //         expect(value).toBe(true)
-      //       }
-      //     })
-
-      //     service.isLoading$().subscribe(() => {
-      //       countDefault++
-      //     })
-
-      //     service.add({key: IsLoadingService})
-      //     service.add({key: IsLoadingService})
-      //     service.add({key: IsLoadingService})
-      //     service.remove({key: IsLoadingService})
-      //     service.remove({key: IsLoadingService})
-      //     service.remove({key: IsLoadingService})
-
-      //     expect(countKey).toBe(2)
-      //     expect(countDefault).toBe(0)
-      //     resolve()
-      //   })
-      // })));
     });
 
     describe("multiple keys", () => {
@@ -587,6 +554,93 @@ describe("IsLoadingService", () => {
 
           value = await service
             .isLoading$({ key: [IsLoadingService, "button"] })
+            .pipe(take(1))
+            .toPromise();
+
+          expect(value).toBe(false);
+        }
+      ));
+
+      it("#add & #clear", inject(
+        [IsLoadingService],
+        async (service: IsLoadingService) => {
+          let value: boolean | undefined = false;
+
+          service.add({ key: [IsLoadingService, "default"] });
+
+          value = await service
+            .isLoading$({ key: IsLoadingService })
+            .pipe(take(1))
+            .toPromise();
+
+          expect(value).toBe(true);
+
+          value = await service.isLoading$().pipe(take(1)).toPromise();
+
+          expect(value).toBe(true);
+
+          value = await service
+            .isLoading$({ key: "button" })
+            .pipe(take(1))
+            .toPromise();
+
+          expect(value).toBe(false);
+
+          service.add({ key: [IsLoadingService, "button"] });
+
+          value = await service
+            .isLoading$({ key: IsLoadingService })
+            .pipe(take(1))
+            .toPromise();
+
+          expect(value).toBe(true);
+
+          value = await service.isLoading$().pipe(take(1)).toPromise();
+
+          expect(value).toBe(true);
+
+          value = await service
+            .isLoading$({ key: "button" })
+            .pipe(take(1))
+            .toPromise();
+
+          expect(value).toBe(true);
+
+          service.clear({ key: [IsLoadingService, "default"] });
+
+          value = await service
+            .isLoading$({ key: IsLoadingService })
+            .pipe(take(1))
+            .toPromise();
+
+          expect(value).toBe(false);
+
+          value = await service.isLoading$().pipe(take(1)).toPromise();
+
+          expect(value).toBe(false);
+
+          value = await service
+            .isLoading$({ key: "button" })
+            .pipe(take(1))
+            .toPromise();
+
+          expect(value).toBe(true);
+
+          service.clear({ key: [IsLoadingService, "button"] });
+
+          value = await service
+            .isLoading$({ key: IsLoadingService })
+            .pipe(take(1))
+            .toPromise();
+
+          expect(value).toBe(false);
+
+          value = await service.isLoading$().pipe(take(1)).toPromise();
+
+          expect(value).toBe(false);
+
+          value = await service
+            .isLoading$({ key: "button" })
             .pipe(take(1))
             .toPromise();
 
