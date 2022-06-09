@@ -5,12 +5,22 @@ import { distinctUntilChanged, take, map } from "rxjs/operators"; // continue to
 export type Key = string | object | symbol;
 
 export interface IGetLoadingOptions {
-  /** Which loading "thing" do you want to track? */
+  /**
+   * Which loading "thing" do you want to track?
+   *
+   * _Note: not providing any key is the same as providing
+   * `"default"` for the key._
+   */
   key?: Key | Key[];
 }
 
 export interface IAddLoadingOptions {
-  /** Used to track the loading of different things */
+  /**
+   * Used to track the loading of different things
+   *
+   * _Note: not providing any key is the same as providing
+   * `"default"` for the key._
+   */
   key?: Key | Key[];
   /**
    * The first time you call IsLoadingService#add() with
@@ -37,6 +47,10 @@ export interface IAddLoadingOptions {
 }
 
 export interface IRemoveLoadingOptions {
+  /**
+   * _Note: not providing any key is the same as providing
+   * `"default"` for the key._
+   */
   key?: Key | Key[];
 }
 
@@ -467,33 +481,34 @@ export class IsLoadingService {
     }
   }
 
-  // /**
-  //  * Clears all the loading indicators for the given key or keys,
-  //  * reseting the loading status for those keys to `false`.
-  //  *
-  //  * Use `"default"` to clear the default key.
-  //  */
-  // clear(key: Key | Key[]) {
-  //   const keys = this.normalizeKeys(key);
+  /**
+   * Clears all the loading indicators for the given key or keys,
+   * reseting the loading status for those keys to `false`.
+   *
+   * Use `"default"` to clear the default key.
+   */
+  clear(options: IRemoveLoadingOptions) {
+    const keys = this.normalizeKeys(options.key);
 
-  //   for (const k of keys) {
-  //     const loadingStack = this.loadingStacks.get(k);
+    for (const k of keys) {
+      const loadingStack = this.loadingStacks.get(k);
 
-  //     // !loadingStack means that a user has called clear() needlessly
-  //     if (!loadingStack) continue;
+      // !loadingStack means that a user has called clear() needlessly
+      if (!loadingStack) continue;
 
-  //     for (const loadingToken of loadingStack) {
-  //       this.deIndexKey(k);
+      for (const loadingToken of loadingStack) {
+        if (loadingToken.source instanceof Observable) {
+          (loadingToken.value as Subscription).unsubscribe();
+        }
 
-  //       if (!loadingToken.isManagedByIsLoadingService) continue;
+        this.deIndexKey(k);
+      }
 
-  //       (loadingToken.value as Subscription).unsubscribe();
-  //     }
-
-  //     this.loadingStacks.set(k, []);
-  //     this.updateLoadingStatus(k);
-  //   }
-  // }
+      if (this.loadingStacks.has(k)) {
+        this.loadingStacks.set(k, []);
+      }
+    }
+  }
 
   private normalizeKeys(key?: Key | Key[]): Key[] {
     if (!key) key = [this.defaultKey];
