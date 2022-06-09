@@ -23,8 +23,8 @@
     "tslib": "^2.0.0"
   },
   "peerDependencies": {
-    "@angular/core": "13",
-    "@angular/router": "13",
+    "@angular/core": "13 || 14",
+    "@angular/router": "13 || 14",
     "@service-work/is-loading": "^6.0.0",
     "rxjs": "^6.0.0 || ^7.0.0"
   },

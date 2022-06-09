@@ -6,7 +6,7 @@
 
 These is a separate and optional [ScrollPositionDirective](#scrollpositiondirective) and `ScrollPositionService` that integrates with `IsLoadingService` and can be used to easily refresh the scroll position of individual HTML elements on router navigation.
 
-#### [See simple demo](https://codesandbox.io/s/isloadingservice-example-ujlgm?file=/src/app/app.component.ts)
+#### [See simple demo](https://stackblitz.com/edit/angular-ivy-onpemr?file=src/app/app.component.ts)
 
 You can install the `IsLoadingService` with
 
@@ -276,7 +276,7 @@ Some examples:
 - https://tobiasahlin.com/spinkit/
 - https://projects.lukehaas.me/css-loaders/
 
-You can also borrow the spinner styling from the [demo app](https://codesandbox.io/s/isloadingservice-example-ujlgm?file=/src/app/app.component.ts).
+You can also borrow the spinner styling from the [demo app](https://stackblitz.com/edit/angular-ivy-onpemr?file=src/app/app.component.ts).
 
 #### Directive Customization
 

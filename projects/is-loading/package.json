@@ -22,7 +22,7 @@
     "tslib": "^2.0.0"
   },
   "peerDependencies": {
-    "@angular/core": "13",
+    "@angular/core": "13 || 14",
     "rxjs": "^6.0.0 || ^7.0.0"
   },
   "typings": "src/public_api.ts",
