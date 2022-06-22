@@ -490,8 +490,8 @@ export class IsLoadingService {
    * just clear the default key (i.e. the key that is used when
    * you just call `isLoadingService.add()`).
    */
-  clear(options: IRemoveLoadingOptions) {
-    const keys = options.key
+  clear(options?: IRemoveLoadingOptions) {
+    const keys = options?.key
       ? this.normalizeKeys(options.key)
       : Array.from(this.loadingStacks.keys());
 
