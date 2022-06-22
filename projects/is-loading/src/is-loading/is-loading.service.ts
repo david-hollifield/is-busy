@@ -485,10 +485,15 @@ export class IsLoadingService {
    * Clears all the loading indicators for the given key or keys,
    * reseting the loading status for those keys to `false`.
    *
-   * Use `"default"` to clear the default key.
+   * If you don't provide an optional `key` (or keys), then all
+   * loading indicators will be cleared. Use key `"default"` to
+   * just clear the default key (i.e. the key that is used when
+   * you just call `isLoadingService.add()`).
    */
   clear(options: IRemoveLoadingOptions) {
-    const keys = this.normalizeKeys(options.key);
+    const keys = options.key
+      ? this.normalizeKeys(options.key)
+      : Array.from(this.loadingStacks.keys());
 
     for (const k of keys) {
       const loadingStack = this.loadingStacks.get(k);
@@ -507,6 +512,8 @@ export class IsLoadingService {
       if (this.loadingStacks.has(k)) {
         this.loadingStacks.set(k, []);
       }
+
+      this.updateLoadingStatus(k);
     }
   }
 
@@ -571,8 +578,10 @@ export class IsLoadingService {
   }
 
   private updateLoadingStatus(key: Key) {
-    const loadingStatus = this.loadingStacks.get(key)!.length > 0;
+    const stackCount = this.loadingStacks.get(key)?.length ?? 0;
 
-    this.loadingSubjects.get(key)!.next(loadingStatus);
+    const loadingStatus = stackCount > 0;
+
+    this.loadingSubjects.get(key)?.next(loadingStatus);
   }
 }

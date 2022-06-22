@@ -4,6 +4,10 @@
 
 - none
 
+### 6.2.1 // 2022-6-22
+
+- [FIX] Properly notify subscribers after a call to `IsLoadingService#clear()` ([#14](https://gitlab.com/service-work/is-loading/-/issues/14)).
+
 ### 6.2.0 // 2022-6-9
 
 - [FEATURE] Add `IsLoadingService#clear()` method for clearing the loading status of a given key or keys.
